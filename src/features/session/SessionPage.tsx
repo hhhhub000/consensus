@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { Link, useParams } from 'react-router'
 import { Spinner } from '../../components/ui'
 import { useAuthUid } from '../../lib/firebase'
 import { useParticipants, useRevealedPlacements, useSession } from '../../lib/hooks'
+import { recordRoomVisit } from '../../lib/sessionHistory'
 import type { Participant, Placement, Session } from '../../types'
 import { ConsensusTurn } from './ConsensusTurn'
 import { FacilitatorBar } from './FacilitatorBar'
@@ -37,6 +39,16 @@ function SessionInner({ session, uid }: { session: Session; uid: string }) {
   const placements = useRevealedPlacements(session.id, session.revealedUpTo)
   const me = participants.find((p) => p.uid === uid)
   const isCreator = session.createdBy === uid
+
+  // 参加済みのルームを履歴に記録 (トップの「過去のルーム」用)
+  useEffect(() => {
+    if (!me) return
+    recordRoomVisit({
+      id: session.id,
+      title: session.title,
+      role: isCreator ? 'creator' : 'participant',
+    })
+  }, [session.id, session.title, isCreator, me])
 
   if (!loaded) return <Spinner label="読み込み中..." />
   if (!me) return <JoinGate session={session} uid={uid} participants={participants} />

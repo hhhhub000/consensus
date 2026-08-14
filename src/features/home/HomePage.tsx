@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '../../components/ui'
 import { TEMPLATES } from '../../data/templates'
+import { listRoomHistory } from '../../lib/sessionHistory'
 import {
   deleteMyTemplate,
   listMyTemplates,
@@ -86,6 +87,8 @@ export default function HomePage() {
         </ol>
       </section>
 
+      <RoomHistoryLinks />
+
       <MyTemplatesSection />
 
       <section id="templates" className="mx-auto max-w-5xl px-4 pb-20">
@@ -116,6 +119,33 @@ export default function HomePage() {
       <footer className="border-t border-grid-strong py-8 text-center text-xs text-ink-faint">
         Consensus — 意見を並べて、合意をつくる
       </footer>
+    </div>
+  )
+}
+
+/** 過去に作成/参加したルームへのリンク (履歴が無ければ非表示) */
+function RoomHistoryLinks() {
+  const [history] = useState(() => listRoomHistory())
+  const created = history.filter((h) => h.role === 'creator').length
+  const joined = history.filter((h) => h.role === 'participant').length
+  if (!created && !joined) return null
+
+  const linkClass =
+    'inline-flex items-center gap-2 rounded-lg border border-ink/15 bg-white/80 px-4 py-2.5 text-sm font-medium text-ink hover:border-ink/40 hover:shadow-card'
+  return (
+    <div className="mx-auto flex max-w-5xl flex-wrap gap-3 px-4 pt-8">
+      {created > 0 && (
+        <Link to="/rooms?tab=created" className={linkClass}>
+          🕘 過去作成したルーム
+          <span className="font-mono text-xs text-ink-soft">{created}</span>
+        </Link>
+      )}
+      {joined > 0 && (
+        <Link to="/rooms?tab=joined" className={linkClass}>
+          🕘 過去参加したルーム
+          <span className="font-mono text-xs text-ink-soft">{joined}</span>
+        </Link>
+      )}
     </div>
   )
 }

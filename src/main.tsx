@@ -8,6 +8,7 @@ import './index.css'
 const HomePage = lazy(() => import('./features/home/HomePage'))
 const CreatePage = lazy(() => import('./features/create/CreatePage'))
 const SessionPage = lazy(() => import('./features/session/SessionPage'))
+const RoomsPage = lazy(() => import('./features/rooms/RoomsPage'))
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/create" element={<CreatePage />} />
+          <Route path="/rooms" element={<RoomsPage />} />
           <Route path="/s/:sessionId" element={<SessionPage />} />
         </Routes>
       </Suspense>
