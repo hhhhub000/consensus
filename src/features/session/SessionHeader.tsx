@@ -1,13 +1,37 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { Tip } from '../../components/ui'
 import type { Phase, Session } from '../../types'
 
-const PHASES: { key: Phase; label: string }[] = [
-  { key: 'lobby', label: '準備' },
-  { key: 'input', label: '入力' },
-  { key: 'reveal', label: '開示' },
-  { key: 'consensus', label: '合意' },
-  { key: 'closed', label: '終了' },
+const PHASES: { key: Phase; label: string; description: string }[] = [
+  {
+    key: 'lobby',
+    label: '準備',
+    description: '参加者が揃うのを待つロビー。招待URLを共有してメンバーを集めます。',
+  },
+  {
+    key: 'input',
+    label: '入力',
+    description:
+      '各自が他の人に見えない状態でカードを配置します。周りに流されず、まず自分の考えを固めるターンです。',
+  },
+  {
+    key: 'reveal',
+    label: '開示',
+    description:
+      '全員の配置を一斉に公開。意見のバラツキと合意度を見ながら議論します。必要なら再入力ラウンドへ。',
+  },
+  {
+    key: 'consensus',
+    label: '合意',
+    description:
+      '全員で1枚のボードを共同編集し、チームとしての結論をつくります。',
+  },
+  {
+    key: 'closed',
+    label: '終了',
+    description: '結果が確定した状態。このページのURLがそのまま記録になります。',
+  },
 ]
 
 export function SessionHeader({ session }: { session: Session }) {
@@ -37,20 +61,31 @@ export function SessionHeader({ session }: { session: Session }) {
           {PHASES.map((p, i) => (
             <li key={p.key} className="flex items-center gap-1">
               {i > 0 && <span className="text-ink-faint">·</span>}
-              <span
-                className={
-                  i === currentIdx
-                    ? 'rounded-sm bg-ink px-1.5 py-0.5 font-bold text-white'
-                    : i < currentIdx
-                      ? 'text-ink-soft'
-                      : 'text-ink-faint'
+              <Tip
+                align={i >= 3 ? 'right' : 'center'}
+                content={
+                  <>
+                    <b className="mb-0.5 block">{p.label}</b>
+                    {p.description}
+                  </>
                 }
               >
-                {p.label}
-                {p.key === session.phase &&
-                  (session.phase === 'input' || session.phase === 'reveal') &&
-                  ` R${session.phase === 'reveal' ? session.revealedUpTo : session.round}`}
-              </span>
+                <span
+                  tabIndex={0}
+                  className={`cursor-help rounded-sm px-1.5 py-0.5 ${
+                    i === currentIdx
+                      ? 'bg-ink font-bold text-white'
+                      : i < currentIdx
+                        ? 'text-ink-soft'
+                        : 'text-ink-faint'
+                  }`}
+                >
+                  {p.label}
+                  {p.key === session.phase &&
+                    (session.phase === 'input' || session.phase === 'reveal') &&
+                    ` R${session.phase === 'reveal' ? session.revealedUpTo : session.round}`}
+                </span>
+              </Tip>
             </li>
           ))}
         </ol>
