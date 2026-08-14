@@ -285,18 +285,42 @@ export function AxisFrame({
         <>
           <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-grid-strong" />
           <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-grid-strong" />
-          {/* X軸 */}
-          <span className="absolute bottom-1 left-2 max-w-[38%] truncate">{axes.x.minLabel}</span>
-          <span className="absolute bottom-1 right-2 max-w-[38%] truncate text-right">
+          {/* X軸: 右に行くほど「大きい」くさび */}
+          <svg
+            className="absolute inset-x-6 bottom-0.5 h-4 w-[calc(100%-3rem)]"
+            preserveAspectRatio="none"
+            viewBox="0 0 100 16"
+            aria-hidden
+          >
+            <polygon points="0,14 100,14 100,2" fill="#21313a" opacity="0.09" />
+          </svg>
+          {/* Y軸: 上に行くほど「大きい」くさび */}
+          <svg
+            className="absolute bottom-6 left-0.5 top-6 h-[calc(100%-3rem)] w-4"
+            preserveAspectRatio="none"
+            viewBox="0 0 16 100"
+            aria-hidden
+          >
+            <polygon points="2,0 14,0 2,100" fill="#21313a" opacity="0.09" />
+          </svg>
+          {/* X軸ラベル */}
+          <span className="absolute bottom-1 left-6 max-w-[35%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
+            ← {axes.x.minLabel}
+          </span>
+          <span className="absolute bottom-1 right-2 max-w-[38%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-right text-[13px] font-bold text-ink">
             {axes.x.maxLabel} →
           </span>
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-sm bg-white/80 px-1.5 font-bold">
+          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-sm bg-white/90 px-2 py-0.5 font-bold text-ink">
             {axes.x.label}
           </span>
-          {/* Y軸 */}
-          <span className="absolute left-2 top-1 max-w-[38%] truncate">↑ {axes.y?.maxLabel}</span>
-          <span className="absolute bottom-6 left-2 max-w-[38%] truncate">{axes.y?.minLabel}</span>
-          <span className="absolute left-1 top-1/2 -translate-y-1/2 rounded-sm bg-white/80 px-1.5 font-bold [writing-mode:vertical-rl]">
+          {/* Y軸ラベル */}
+          <span className="absolute left-1 top-1 max-w-[45%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-[13px] font-bold text-ink">
+            ↑ {axes.y?.maxLabel}
+          </span>
+          <span className="absolute bottom-7 left-1 max-w-[40%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
+            ↓ {axes.y?.minLabel}
+          </span>
+          <span className="absolute left-1 top-1/2 -translate-y-1/2 rounded-sm bg-white/90 px-1 py-1.5 font-bold text-ink [writing-mode:vertical-rl]">
             {axes.y?.label}
           </span>
         </>
