@@ -10,7 +10,14 @@ export interface Template {
   cards: { label: string; description?: string }[]
 }
 
+/**
+ * 並び順はUI (3列グリッド) で系統ごとに行がまとまるように:
+ * 1行目 = ゲーム系 (実生活では使わない定番コンセンサスゲーム)
+ * 2行目 = 日常系
+ * 3行目 = ビジネス系
+ */
 export const TEMPLATES: Template[] = [
+  /* ---- ゲーム系 ---- */
   {
     id: 'nasa',
     name: 'NASAゲーム',
@@ -36,6 +43,52 @@ export const TEMPLATES: Template[] = [
       { label: '照明弾' },
     ],
   },
+  {
+    id: 'island',
+    name: '無人島サバイバル',
+    emoji: '🏝️',
+    tagline: '漂流して無人島へ。救助まで1週間、持ち物の優先度は?',
+    axisType: '1d',
+    axes: { x: { label: '優先度', minLabel: '低い', maxLabel: '高い' } },
+    cards: [
+      { label: 'ナイフ' },
+      { label: 'ライター' },
+      { label: '手鏡' },
+      { label: 'ロープ (20m)' },
+      { label: 'ブルーシート' },
+      { label: '釣り道具' },
+      { label: '鍋' },
+      { label: '懐中電灯' },
+      { label: '救急セット' },
+      { label: '虫除けスプレー' },
+      { label: 'ホイッスル' },
+      { label: '双眼鏡' },
+    ],
+  },
+  {
+    id: 'desert',
+    name: '砂漠サバイバル',
+    emoji: '🏜️',
+    tagline: '飛行機が砂漠に不時着。日中は40℃超。救助を待つために残す物は?',
+    axisType: '1d',
+    axes: { x: { label: '優先度', minLabel: '低い', maxLabel: '高い' } },
+    cards: [
+      { label: '化粧用の鏡' },
+      { label: 'オーバーコート' },
+      { label: '水 (1人1L)' },
+      { label: '懐中電灯' },
+      { label: '赤白のパラシュート' },
+      { label: 'ナイフ' },
+      { label: '拳銃' },
+      { label: 'サングラス' },
+      { label: '救急箱' },
+      { label: '磁石コンパス' },
+      { label: '航空地図' },
+      { label: 'ウォッカ (2L)' },
+    ],
+  },
+
+  /* ---- 日常系 ---- */
   {
     id: 'moving',
     name: '引っ越し先の条件',
@@ -85,27 +138,29 @@ export const TEMPLATES: Template[] = [
     ],
   },
   {
-    id: 'island',
-    name: '無人島サバイバル',
-    emoji: '🏝️',
-    tagline: '漂流して無人島へ。救助まで1週間、持ち物の優先度は?',
+    id: 'bousai',
+    name: '防災グッズの優先度',
+    emoji: '🎒',
+    tagline: '非常持ち出し袋に入れる物、家族で優先度を揃えておく',
     axisType: '1d',
     axes: { x: { label: '優先度', minLabel: '低い', maxLabel: '高い' } },
     cards: [
-      { label: 'ナイフ' },
-      { label: 'ライター' },
-      { label: '手鏡' },
-      { label: 'ロープ (20m)' },
-      { label: 'ブルーシート' },
-      { label: '釣り道具' },
-      { label: '鍋' },
-      { label: '懐中電灯' },
+      { label: '飲料水' },
+      { label: '非常食' },
+      { label: 'モバイルバッテリー' },
+      { label: '現金 (小銭)' },
+      { label: '携帯ラジオ' },
+      { label: '簡易トイレ' },
       { label: '救急セット' },
-      { label: '虫除けスプレー' },
+      { label: '懐中電灯' },
+      { label: '軍手' },
+      { label: 'ウェットティッシュ' },
+      { label: '毛布・防寒具' },
       { label: 'ホイッスル' },
-      { label: '双眼鏡' },
     ],
   },
+
+  /* ---- ビジネス系 ---- */
   {
     id: 'backlog',
     name: '機能優先度マトリクス',
@@ -151,25 +206,26 @@ export const TEMPLATES: Template[] = [
     ],
   },
   {
-    id: 'bousai',
-    name: '防災グッズの優先度',
-    emoji: '🎒',
-    tagline: '非常持ち出し袋に入れる物、家族で優先度を揃えておく',
-    axisType: '1d',
-    axes: { x: { label: '優先度', minLabel: '低い', maxLabel: '高い' } },
+    id: 'team-issues',
+    name: 'チーム課題マップ',
+    emoji: '🧩',
+    tagline: 'チームの「もやもや」を緊急度×重要度で仕分けし、次に手を付ける課題を合意する',
+    axisType: '2d',
+    axes: {
+      x: { label: '重要度', minLabel: '低い', maxLabel: '高い' },
+      y: { label: '緊急度', minLabel: '低い', maxLabel: '高い' },
+    },
     cards: [
-      { label: '飲料水' },
-      { label: '非常食' },
-      { label: 'モバイルバッテリー' },
-      { label: '現金 (小銭)' },
-      { label: '携帯ラジオ' },
-      { label: '簡易トイレ' },
-      { label: '救急セット' },
-      { label: '懐中電灯' },
-      { label: '軍手' },
-      { label: 'ウェットティッシュ' },
-      { label: '毛布・防寒具' },
-      { label: 'ホイッスル' },
+      { label: '会議が多すぎる' },
+      { label: 'ドキュメント不足' },
+      { label: '業務の属人化' },
+      { label: 'テスト不足' },
+      { label: 'コミュニケーション不足' },
+      { label: '技術的負債' },
+      { label: '目標が不明確' },
+      { label: 'ツール・環境が古い' },
+      { label: '振り返りの形骸化' },
+      { label: '採用・オンボーディング' },
     ],
   },
 ]
