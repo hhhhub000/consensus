@@ -179,6 +179,7 @@ export function RevealTurn({
               myUid={uid}
               showDots={showDots}
               showNames={session.showNames}
+              axisLabel={session.axes.x.label}
               axisMinLabel={session.axes.x.minLabel}
               axisMaxLabel={session.axes.x.maxLabel}
             />
@@ -201,7 +202,7 @@ export function RevealTurn({
           )}
           <p className="mt-2 text-[11px] text-ink-faint">
             {session.axisType === '1d'
-              ? '帯 = 最小〜最大の範囲、濃さ = 意見の集中度、太い線 = 中央値。'
+              ? '横帯 = 最小〜最大の範囲、濃さ = 意見の集中度、太い縦線 = 中央値。'
               : '楕円 = 意見の散らばり (標準偏差楕円)、点 = 重心。'}
             {session.showNames ? ' ドットにカーソルを合わせると名前が出ます。' : ' 名前は匿名表示です。'}
             赤いドットはあなた自身の配置。
