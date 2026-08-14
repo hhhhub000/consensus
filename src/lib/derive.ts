@@ -13,7 +13,7 @@ import {
 export interface CardStat {
   card: CardDef
   n: number
-  points: { uid: string; pos: Pos }[]
+  points: { uid: string; pos: Pos; note?: string }[]
   /** 1軸のときの値 (= x 座標) */
   values: number[]
   agreement: number
@@ -33,7 +33,7 @@ export function computeCardStats(
   return cards.map((card) => {
     const points = placements
       .filter((p) => p.positions[card.id])
-      .map((p) => ({ uid: p.uid, pos: p.positions[card.id] }))
+      .map((p) => ({ uid: p.uid, pos: p.positions[card.id], note: p.notes?.[card.id] }))
     const values = points.map((pt) => pt.pos.x)
     const [min, max] = extent01(values)
     const pts = points.map((p) => p.pos)

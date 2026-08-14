@@ -14,6 +14,10 @@ export interface PlacementBoardProps {
   onDragLive?: (cardId: string, pos: Pos) => void
   /** ドラッグ/ホバー中のカード変化 (ゴースト表示用) */
   onActiveCard?: (cardId: string | null) => void
+  /** 配置済みカードをクリック (ドラッグせず) したとき。メモ編集用 */
+  onCardClick?: (cardId: string) => void
+  /** メモ付きカードに 📝 マークを表示 */
+  hasNote?: (cardId: string) => boolean
   /** ボード内に敷くレイヤー (分布ゴーストなど)。カードの下に描画される */
   overlay?: ReactNode
   /** カードチップの右肩に出す注記 (合意ボードの「最終移動者」など) */
@@ -25,6 +29,10 @@ interface DragState {
   cardId: string
   clientX: number
   clientY: number
+  startX: number
+  startY: number
+  /** ドラッグ開始時点で配置済みだったか (クリック判定用) */
+  wasPlaced: boolean
   pos: Pos | null // ボード内にいるときのみ
 }
 
@@ -37,6 +45,8 @@ export function PlacementBoard({
   onMove,
   onDragLive,
   onActiveCard,
+  onCardClick,
+  hasNote,
   overlay,
   cardNote,
   trayHint,
@@ -69,7 +79,15 @@ export function PlacementBoard({
     } catch {
       /* 合成イベント等で capture できなくても続行 */
     }
-    setDrag({ cardId, clientX: e.clientX, clientY: e.clientY, pos: toPos(e.clientX, e.clientY) })
+    setDrag({
+      cardId,
+      clientX: e.clientX,
+      clientY: e.clientY,
+      startX: e.clientX,
+      startY: e.clientY,
+      wasPlaced: !!positions[cardId],
+      pos: toPos(e.clientX, e.clientY),
+    })
     onActiveCard?.(cardId)
   }
 
@@ -87,6 +105,12 @@ export function PlacementBoard({
     const pos = toPos(e.clientX, e.clientY)
     setDrag(null)
     onActiveCard?.(null)
+    // ほぼ動かしていない配置済みカードは「クリック」= メモ編集
+    const moved = Math.hypot(e.clientX - cur.startX, e.clientY - cur.startY)
+    if (moved < 6 && cur.wasPlaced && onCardClick) {
+      onCardClick(cur.cardId)
+      return
+    }
     onMove?.(cur.cardId, pos)
   }
 
@@ -127,6 +151,7 @@ export function PlacementBoard({
               key={card.id}
               card={card}
               note={cardNote?.(card.id)}
+              noteMark={hasNote?.(card.id)}
               disabled={disabled}
               dragging={isDragging}
               style={{
@@ -212,6 +237,7 @@ export function PlacementBoard({
 function CardChip({
   card,
   note,
+  noteMark,
   disabled,
   dragging,
   style,
@@ -219,6 +245,7 @@ function CardChip({
 }: {
   card: CardDef
   note?: string
+  noteMark?: boolean
   disabled?: boolean
   dragging?: boolean
   style?: React.CSSProperties
@@ -239,7 +266,7 @@ function CardChip({
       aria-label={`カード: ${card.label}`}
       {...handlers}
     >
-      <ChipBody card={card} note={note} dragging={dragging} />
+      <ChipBody card={card} note={note} noteMark={noteMark} dragging={dragging} />
     </button>
   )
 }
@@ -247,10 +274,12 @@ function CardChip({
 function ChipBody({
   card,
   note,
+  noteMark,
   dragging,
 }: {
   card: CardDef
   note?: string
+  noteMark?: boolean
   dragging?: boolean
 }) {
   return (
@@ -261,6 +290,7 @@ function ChipBody({
         }`}
         style={{ borderLeft: `4px solid ${card.color}` }}
       >
+        {noteMark && <span aria-label="メモあり">📝</span>}
         {card.label}
       </span>
       {note && (

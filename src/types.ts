@@ -48,10 +48,14 @@ export interface Placement {
   uid: string
   round: number
   positions: Record<string, Pos>
+  /** カードごとのメモ (任意) */
+  notes: Record<string, string>
   updatedAt?: number
 }
 
 export interface ConsensusBoard {
   positions: Record<string, Pos>
   lastMovedBy: Record<string, string>
+  /** カードごとの「全員の意見」としてのメモ */
+  notes: Record<string, string>
 }

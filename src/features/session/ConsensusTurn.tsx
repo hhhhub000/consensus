@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { moveConsensusCard, removeConsensusCard } from '../../lib/db'
+import { NoteEditor } from '../../components/NoteEditor'
+import { moveConsensusCard, removeConsensusCard, setConsensusNote } from '../../lib/db'
 import { computeCardStats } from '../../lib/derive'
 import { useConsensusBoard } from '../../lib/hooks'
 import type { Participant, Placement, Pos, Session } from '../../types'
@@ -18,6 +19,7 @@ export function ConsensusTurn({
 }) {
   const board = useConsensusBoard(session.id, true)
   const [activeCard, setActiveCard] = useState<string | null>(null)
+  const [noteCardId, setNoteCardId] = useState<string | null>(null)
 
   // 最終開示ラウンドの分布 (ゴースト表示用)
   const finalStats = useMemo(() => {
@@ -47,7 +49,7 @@ export function ConsensusTurn({
         <h2 className="font-display text-lg font-bold">合意ボード — 全員で1枚をつくる</h2>
         <p className="text-sm text-ink-soft">
           誰でもカードを動かせます。動かすと全員の画面に即時反映。カードを触ると、そのカードの開示時の分布が背景に表示されます
-          — 分布から大きく外れた合意には立ち止まりましょう。
+          — 分布から大きく外れた合意には立ち止まりましょう。カードをクリックすると「全員の意見」としてメモを残せます。
         </p>
       </div>
 
@@ -70,9 +72,24 @@ export function ConsensusTurn({
               }
             : undefined
         }
+        onCardClick={setNoteCardId}
+        hasNote={(cardId) => !!board?.notes[cardId]}
         overlay={activeStat && <GhostDistribution stat={activeStat} axisType={session.axisType} />}
-        trayHint="トレイのカードは「対象外」の扱いです。ボード外へドラッグで戻せます"
+        trayHint="カードをクリックで全員のメモ。ボード外へドラッグでトレイに戻せます"
       />
+
+      {noteCardId && (
+        <NoteEditor
+          cardLabel={session.cards.find((c) => c.id === noteCardId)?.label ?? ''}
+          cardColor={session.cards.find((c) => c.id === noteCardId)?.color ?? '#888'}
+          initial={board?.notes[noteCardId] ?? ''}
+          hint="「全員の意見」として記録され、結果画面のメモ一覧に表示されます"
+          onSave={(note) => {
+            setConsensusNote(session.id, noteCardId, note).catch(console.error)
+          }}
+          onClose={() => setNoteCardId(null)}
+        />
+      )}
     </div>
   )
 }

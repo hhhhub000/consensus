@@ -105,6 +105,7 @@ export function useRevealedPlacements(id: string | undefined, revealedUpTo: numb
               uid: v.uid,
               round: v.round,
               positions: v.positions ?? {},
+              notes: v.notes ?? {},
               updatedAt: toMillis(v.updatedAt),
             }
           }),
@@ -131,7 +132,11 @@ export function useConsensusBoard(
           return
         }
         const v = snap.data()
-        setBoard({ positions: v.positions ?? {}, lastMovedBy: v.lastMovedBy ?? {} })
+        setBoard({
+          positions: v.positions ?? {},
+          lastMovedBy: v.lastMovedBy ?? {},
+          notes: v.notes ?? {},
+        })
       },
       (err) => console.error('consensus subscribe error', err),
     )

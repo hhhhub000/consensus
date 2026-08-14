@@ -64,23 +64,38 @@ export async function joinSession(id: string, uid: string, name: string, color: 
   )
 }
 
+export interface PlacementData {
+  positions: Record<string, Pos>
+  notes: Record<string, string>
+}
+
 export async function savePlacement(
   id: string,
   uid: string,
   round: number,
-  positions: Record<string, Pos>,
+  data: PlacementData,
 ) {
   await setDoc(placementRef(id, round, uid), {
     uid,
     round,
-    positions,
+    positions: data.positions,
+    notes: data.notes,
     updatedAt: serverTimestamp(),
   })
 }
 
-export async function fetchPlacement(id: string, round: number, uid: string) {
+export async function fetchPlacement(
+  id: string,
+  round: number,
+  uid: string,
+): Promise<PlacementData | null> {
   const snap = await getDoc(placementRef(id, round, uid))
-  return snap.exists() ? (snap.data().positions as Record<string, Pos>) : null
+  if (!snap.exists()) return null
+  const d = snap.data()
+  return {
+    positions: (d.positions ?? {}) as Record<string, Pos>,
+    notes: (d.notes ?? {}) as Record<string, string>,
+  }
 }
 
 export async function setReady(id: string, uid: string, round: number) {
@@ -103,7 +118,7 @@ export async function nextRound(id: string, currentRound: number) {
 
 export async function toConsensus(id: string, initialPositions: Record<string, Pos>) {
   await updateDoc(sessionRef(id), { phase: 'consensus' })
-  await setDoc(consensusRef(id), { positions: initialPositions, lastMovedBy: {} })
+  await setDoc(consensusRef(id), { positions: initialPositions, lastMovedBy: {}, notes: {} })
 }
 
 export async function closeSession(id: string) {
@@ -127,5 +142,12 @@ export async function removeConsensusCard(id: string, cardId: string, uid: strin
   await updateDoc(consensusRef(id), {
     [`positions.${cardId}`]: deleteField(),
     [`lastMovedBy.${cardId}`]: uid,
+  })
+}
+
+/** 合意ボードのメモ (「全員の意見」として記録)。空文字で削除 */
+export async function setConsensusNote(id: string, cardId: string, note: string) {
+  await updateDoc(consensusRef(id), {
+    [`notes.${cardId}`]: note.trim() ? note.trim() : deleteField(),
   })
 }

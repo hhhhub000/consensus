@@ -1,10 +1,11 @@
 import type { DriveStep } from 'driver.js'
 import { useEffect, useMemo, useState } from 'react'
+import { NoteEditor } from '../../components/NoteEditor'
 import { Button, Spinner } from '../../components/ui'
-import { fetchPlacement, savePlacement, setReady } from '../../lib/db'
+import { fetchPlacement, savePlacement, setReady, type PlacementData } from '../../lib/db'
 import { startTour, useTour } from '../../lib/tour'
 import { debounce } from '../../lib/utils'
-import type { Participant, Pos, Session } from '../../types'
+import type { Participant, Session } from '../../types'
 import { PlacementBoard } from '../board/PlacementBoard'
 
 const INPUT_TOUR: DriveStep[] = [
@@ -20,7 +21,7 @@ const INPUT_TOUR: DriveStep[] = [
     popover: {
       title: 'ボードに配置',
       description:
-        'カードをドラッグして軸の上に置きます。位置は何度でも動かせて、自動保存されます。ボードの外へドラッグすると置き場に戻せます。',
+        'カードをドラッグして軸の上に置きます。位置は何度でも動かせて、自動保存されます。ボードの外へドラッグすると置き場に戻せます。配置済みカードをクリックするとメモ (理由や補足) を書けます。',
     },
   },
   {
@@ -50,7 +51,8 @@ export function InputTurn({
   uid: string
   participants: Participant[]
 }) {
-  const [positions, setPositions] = useState<Record<string, Pos> | null>(null)
+  const [data, setData] = useState<PlacementData | null>(null)
+  const [noteCardId, setNoteCardId] = useState<string | null>(null)
   const me = participants.find((p) => p.uid === uid)
   const isReady = (me?.readyRound ?? 0) >= session.round
 
@@ -59,18 +61,18 @@ export function InputTurn({
     let alive = true
     ;(async () => {
       try {
-        let pos = await fetchPlacement(session.id, session.round, uid)
-        if (!pos && session.round > 1) {
-          pos = await fetchPlacement(session.id, session.round - 1, uid)
-          if (pos && alive) {
+        let d = await fetchPlacement(session.id, session.round, uid)
+        if (!d && session.round > 1) {
+          d = await fetchPlacement(session.id, session.round - 1, uid)
+          if (d && alive) {
             // 引き継ぎを保存しておく (触らなくても「前回と同じ意見」として扱う)
-            await savePlacement(session.id, uid, session.round, pos)
+            await savePlacement(session.id, uid, session.round, d)
           }
         }
-        if (alive) setPositions(pos ?? {})
+        if (alive) setData(d ?? { positions: {}, notes: {} })
       } catch (e) {
         console.error(e)
-        if (alive) setPositions({})
+        if (alive) setData({ positions: {}, notes: {} })
       }
     })()
     return () => {
@@ -78,18 +80,18 @@ export function InputTurn({
     }
   }, [session.id, session.round, uid])
 
-  useTour('input', () => INPUT_TOUR, positions !== null)
+  useTour('input', () => INPUT_TOUR, data !== null)
 
   const debouncedSave = useMemo(
     () =>
-      debounce((p: Record<string, Pos>) => {
-        savePlacement(session.id, uid, session.round, p).catch(console.error)
+      debounce((d: PlacementData) => {
+        savePlacement(session.id, uid, session.round, d).catch(console.error)
       }, 400),
     [session.id, session.round, uid],
   )
   useEffect(() => () => debouncedSave.flush(), [debouncedSave])
 
-  if (positions === null) return <Spinner label="前回の配置を読み込み中..." />
+  if (data === null) return <Spinner label="前回の配置を読み込み中..." />
 
   const readyCount = participants.filter((p) => p.readyRound >= session.round).length
 
@@ -138,18 +140,46 @@ export function InputTurn({
         axisType={session.axisType}
         axes={session.axes}
         cards={session.cards}
-        positions={positions}
+        positions={data.positions}
+        hasNote={(cardId) => !!data.notes[cardId]}
+        onCardClick={setNoteCardId}
         onMove={(cardId, pos) => {
-          setPositions((prev) => {
-            const next = { ...(prev ?? {}) }
-            if (pos) next[cardId] = pos
-            else delete next[cardId]
+          setData((prev) => {
+            const next: PlacementData = {
+              positions: { ...(prev?.positions ?? {}) },
+              notes: { ...(prev?.notes ?? {}) },
+            }
+            if (pos) next.positions[cardId] = pos
+            else delete next.positions[cardId]
             debouncedSave(next)
             return next
           })
         }}
+        trayHint="ドラッグでボードへ。配置済みカードをクリックするとメモを書けます"
       />
       </div>
+
+      {noteCardId && (
+        <NoteEditor
+          cardLabel={session.cards.find((c) => c.id === noteCardId)?.label ?? ''}
+          cardColor={session.cards.find((c) => c.id === noteCardId)?.color ?? '#888'}
+          initial={data.notes[noteCardId] ?? ''}
+          hint="開示時に、あなたのドットと一緒に表示されます"
+          onSave={(note) => {
+            setData((prev) => {
+              const next: PlacementData = {
+                positions: { ...(prev?.positions ?? {}) },
+                notes: { ...(prev?.notes ?? {}) },
+              }
+              if (note) next.notes[noteCardId] = note
+              else delete next.notes[noteCardId]
+              debouncedSave(next)
+              return next
+            })
+          }}
+          onClose={() => setNoteCardId(null)}
+        />
+      )}
     </div>
   )
 }

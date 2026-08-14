@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { CardStat } from '../../lib/derive'
 import { hashString } from '../../lib/utils'
 import type { Participant } from '../../types'
+import { DotTipOverlay, type DotTipState } from './DotTip'
 
 const ROW_H = 48
 const MID_Y = ROW_H / 2
@@ -42,10 +43,15 @@ export function Reveal1D({
   const nameOf = (uid: string) => byUid.get(uid)?.name ?? '参加者'
   const colorOf = (uid: string) => byUid.get(uid)?.color ?? '#8b9aa0'
 
+  const [tip, setTip] = useState<DotTipState | null>(null)
+
   const pct = (v: number) => `${(v * 100).toFixed(2)}%`
 
   return (
-    <div className="overflow-hidden rounded-xl border border-ink/15 bg-surface shadow-card">
+    <div
+      className="overflow-hidden rounded-xl border border-ink/15 bg-surface shadow-card"
+      onClick={() => setTip(null)}
+    >
       {/* 軸ヘッダー (入力ボードと同じ向き・同じ表現) */}
       <div className="grid grid-cols-[7rem_1fr] items-end gap-2 border-b border-ink/10 px-3 pb-1.5 pt-2 sm:grid-cols-[9rem_1fr]">
         <span className="text-[11px] font-bold text-ink-faint">カード</span>
@@ -182,24 +188,50 @@ export function Reveal1D({
                           : own
                             ? '#ffffff'
                             : '#21313a'
+                        const cy = MID_Y + jitter
+                        const showTip = (e: { clientX: number; clientY: number }) =>
+                          setTip({
+                            x: e.clientX,
+                            y: e.clientY,
+                            name: own
+                              ? `${showNames ? nameOf(pt.uid) : '自分'} (自分)`
+                              : showNames
+                                ? nameOf(pt.uid)
+                                : null,
+                            note: pt.note,
+                          })
                         return (
-                          <circle
+                          <g
                             key={pt.uid}
-                            cx={pct(pt.pos.x)}
-                            cy={MID_Y + jitter}
-                            r={own ? 5 : 4}
-                            fill={fill}
-                            stroke={stroke}
-                            strokeWidth={own && showNames ? 2 : 1.4}
+                            className="cursor-pointer"
+                            onMouseEnter={showTip}
+                            onMouseLeave={() => setTip(null)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              showTip(e)
+                            }}
                           >
-                            <title>
-                              {own
-                                ? `${nameOf(pt.uid)} (自分)`
-                                : showNames
-                                  ? nameOf(pt.uid)
-                                  : '参加者'}
-                            </title>
-                          </circle>
+                            <circle
+                              cx={pct(pt.pos.x)}
+                              cy={cy}
+                              r={own ? 5 : 4}
+                              fill={fill}
+                              stroke={stroke}
+                              strokeWidth={own && showNames ? 2 : 1.4}
+                            />
+                            {/* メモありマーク */}
+                            {pt.note && (
+                              <circle
+                                cx={pct(pt.pos.x)}
+                                cy={cy}
+                                transform="translate(4, -4)"
+                                r={2}
+                                fill="#21313a"
+                                stroke="#ffffff"
+                                strokeWidth={0.8}
+                              />
+                            )}
+                          </g>
                         )
                       })}
                   </>
@@ -209,6 +241,7 @@ export function Reveal1D({
           )
         })}
       </div>
+      <DotTipOverlay tip={tip} />
     </div>
   )
 }

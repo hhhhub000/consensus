@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { CardStat } from '../../lib/derive'
 import type { AxisDef, Participant } from '../../types'
 import { AxisFrame } from '../board/PlacementBoard'
+import { DotTipOverlay, type DotTipState } from './DotTip'
 import { AgreementChip } from './Reveal1D'
 
 export type Mode2D = 'all' | 'single' | 'grid'
@@ -37,6 +38,7 @@ export function Reveal2D({
   )
   const nameOf = (uid: string) => byUid.get(uid)?.name ?? '参加者'
   const colorOf = (uid: string) => byUid.get(uid)?.color ?? '#8b9aa0'
+  const [tip, setTip] = useState<DotTipState | null>(null)
 
   if (mode === 'grid') {
     return (
@@ -78,7 +80,7 @@ export function Reveal2D({
   const selected = stats.find((s) => s.card.id === selectedCardId) ?? stats[0]
 
   return (
-    <div>
+    <div onClick={() => setTip(null)}>
       {mode === 'single' && (
         <div className="mb-3 flex flex-wrap gap-1.5">
           {stats.map((s) => (
@@ -133,10 +135,12 @@ export function Reveal2D({
               nameOf={showNames ? nameOf : undefined}
               colorOf={showNames ? colorOf : undefined}
               prev={prevStats?.get(selected.card.id)}
+              onDotTip={setTip}
             />
           )}
         </svg>
       </div>
+      <DotTipOverlay tip={tip} />
     </div>
   )
 }
@@ -162,6 +166,7 @@ function CardCloud({
   nameOf,
   colorOf,
   prev,
+  onDotTip,
 }: {
   stat: CardStat
   myUid: string
@@ -172,6 +177,7 @@ function CardCloud({
   /** 指定時 (名前表示中) はドットを人物ごとの色で塗り分け */
   colorOf?: (uid: string) => string
   prev?: CardStat
+  onDotTip?: (tip: DotTipState | null) => void
 }) {
   const color = stat.card.color
   const c = stat.centroidPos
@@ -224,8 +230,28 @@ function CardCloud({
           const own = pt.uid === myUid
           const fill = colorOf ? colorOf(pt.uid) : own ? '#d8492b' : '#ffffff'
           const stroke = colorOf ? (own ? '#21313a' : '#ffffff') : own ? '#ffffff' : '#21313a'
+          const showTip = (e: { clientX: number; clientY: number }) =>
+            onDotTip?.({
+              x: e.clientX,
+              y: e.clientY,
+              name: own
+                ? `${nameOf ? nameOf(pt.uid) : '自分'} (自分)`
+                : nameOf
+                  ? nameOf(pt.uid)
+                  : null,
+              note: pt.note,
+            })
           return (
-            <g key={pt.uid}>
+            <g
+              key={pt.uid}
+              className="cursor-pointer"
+              onMouseEnter={showTip}
+              onMouseLeave={() => onDotTip?.(null)}
+              onClick={(e) => {
+                e.stopPropagation()
+                showTip(e)
+              }}
+            >
               <circle
                 cx={pt.pos.x * 100}
                 cy={pt.pos.y * 100}
@@ -233,9 +259,18 @@ function CardCloud({
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={own && colorOf ? 0.9 : 0.6}
-              >
-                <title>{own ? '自分' : nameOf ? nameOf(pt.uid) : '参加者'}</title>
-              </circle>
+              />
+              {/* メモありマーク */}
+              {pt.note && (
+                <circle
+                  cx={pt.pos.x * 100 + 1.8}
+                  cy={pt.pos.y * 100 - 1.8}
+                  r={0.9}
+                  fill="#21313a"
+                  stroke="#ffffff"
+                  strokeWidth={0.35}
+                />
+              )}
               {nameOf && !own && (
                 <text
                   x={pt.pos.x * 100}
