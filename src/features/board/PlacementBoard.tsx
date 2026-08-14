@@ -302,10 +302,23 @@ export function AxisFrame({
         </>
       ) : (
         <>
-          <div className="absolute bottom-8 left-3 right-3 h-px bg-grid-strong" />
-          <span className="absolute bottom-3 left-3">← {axes.x.minLabel}</span>
-          <span className="absolute bottom-3 right-3">{axes.x.maxLabel} →</span>
-          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-sm bg-white/80 px-1.5 font-bold">
+          {/* 右に行くほど「大きい」を示すくさび形 */}
+          <svg
+            className="absolute inset-x-3 bottom-9 h-5 w-[calc(100%-1.5rem)]"
+            preserveAspectRatio="none"
+            viewBox="0 0 100 20"
+            aria-hidden
+          >
+            <polygon points="0,18 100,18 100,2" fill="#21313a" opacity="0.09" />
+            <line x1="0" y1="19" x2="100" y2="19" stroke="#c9d3d0" strokeWidth="1.5" />
+          </svg>
+          <span className="absolute bottom-2.5 left-3 rounded-sm bg-white/80 px-1.5 py-0.5">
+            ← {axes.x.minLabel}
+          </span>
+          <span className="absolute bottom-2.5 right-3 rounded-sm bg-white/85 px-1.5 py-0.5 text-[13px] font-bold text-ink">
+            {axes.x.maxLabel} →
+          </span>
+          <span className="absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-sm bg-white/85 px-2 py-0.5 font-bold text-ink">
             {axes.x.label}
           </span>
         </>
