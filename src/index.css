@@ -24,6 +24,8 @@
 
 html {
   height: 100%;
+  /* ページ内アンカー (トップの「テンプレートから始める」等) を滑らかに */
+  scroll-behavior: smooth;
 }
 
 body {
@@ -58,6 +60,17 @@ body {
   from {
     opacity: 0;
     transform: translateY(-2px);
+  }
+}
+
+/* ページ・フェーズ切替のフェードイン */
+.animate-fade-up {
+  animation: fade-up 0.35s ease-out both;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
 }
 

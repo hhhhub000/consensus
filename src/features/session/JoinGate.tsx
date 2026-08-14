@@ -32,7 +32,7 @@ export function JoinGate({
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
+    <div className="animate-fade-up mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
       <p className="font-display text-sm font-bold text-ink-soft">Consensus</p>
       <h1 className="mt-1 font-display text-2xl font-bold leading-snug">{session.title}</h1>
       <p className="mt-2 text-sm text-ink-soft">

@@ -50,7 +50,8 @@ function SessionInner({ session, uid }: { session: Session; uid: string }) {
         participants={participants}
         placements={placements}
       />
-      <main className="mt-4">
+      {/* key でフェーズ切替のたびにフェードインさせる */}
+      <main key={session.phase} className="animate-fade-up mt-4">
         <PhaseContent
           session={session}
           uid={uid}

@@ -72,7 +72,7 @@ export default function CreatePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pb-24 pt-6">
+    <div className="animate-fade-up mx-auto max-w-2xl px-4 pb-24 pt-6">
       <header className="mb-6 flex items-center justify-between">
         <Link to="/" className="font-display text-lg font-bold">
           Consensus

@@ -22,7 +22,7 @@ const STEPS = [
 
 export default function HomePage() {
   return (
-    <div className="min-h-dvh">
+    <div className="animate-fade-up min-h-dvh">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
         <span className="font-display text-lg font-bold tracking-wide">Consensus</span>
         <Link
