@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { NoteEditor } from '../../components/NoteEditor'
 import { Button, Spinner } from '../../components/ui'
 import { fetchPlacement, savePlacement, setReady, type PlacementData } from '../../lib/db'
-import { startTour, useTour } from '../../lib/tour'
+import { isTourDone, startTour, useTour } from '../../lib/tour'
 import { debounce } from '../../lib/utils'
 import type { Participant, Session } from '../../types'
 import { PlacementBoard } from '../board/PlacementBoard'
@@ -38,6 +38,18 @@ const INPUT_TOUR: DriveStep[] = [
       title: '置き終わったら宣言',
       description:
         '「配置完了」を押すと進み具合が共有されます (配置の中身は見えません)。全員が揃うとファシリテーターが一斉開示します。',
+    },
+  },
+]
+
+/** 初めてカードを配置した直後に出す1ステップの案内 */
+const NOTE_TOUR: DriveStep[] = [
+  {
+    element: '[data-tour="input-board"] .graph-paper button[aria-label^="カード:"]',
+    popover: {
+      title: 'カードにメモを書けます',
+      description:
+        '配置したカードをクリックすると、そこに置いた理由や補足をメモできます。メモは開示のとき、あなたのドットにカーソルを合わせると表示されます。',
     },
   },
 ]
@@ -154,6 +166,10 @@ export function InputTurn({
             debouncedSave(next)
             return next
           })
+          // 初めてカードを置いたタイミングでメモ機能を1ステップ案内
+          if (pos && !isTourDone('note')) {
+            setTimeout(() => startTour('note', NOTE_TOUR), 450)
+          }
         }}
         trayHint="ドラッグでボードへ。配置済みカードをクリックするとメモを書けます"
       />

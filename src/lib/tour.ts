@@ -4,6 +4,10 @@ import { useEffect } from 'react'
 
 const doneKey = (key: string) => `consensus:tour:${key}`
 
+export function isTourDone(key: string): boolean {
+  return !!localStorage.getItem(doneKey(key))
+}
+
 /**
  * 吹き出しガイドツアーを開始する。
  * 一度最後まで見た/閉じたツアーは localStorage に記録し、force 指定がない限り再表示しない。
