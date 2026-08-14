@@ -78,7 +78,7 @@ export function RevealTurn({
   const [compare, setCompare] = useState(true)
   const [showDots, setShowDots] = useState(true)
   const [sort, setSort] = useState<Sort1D>('theme')
-  const [mode, setMode] = useState<Mode2D>(session.cards.length > 6 ? 'grid' : 'all')
+  const [mode, setMode] = useState<Mode2D>('all')
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [hiddenCards, setHiddenCards] = useState<Set<string>>(new Set())
 
