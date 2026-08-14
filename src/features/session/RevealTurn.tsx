@@ -78,6 +78,29 @@ export function RevealTurn({
         <ConvergenceTrend trend={trend} />
       </div>
 
+      {/* 名前表示中は人物ごとの色の凡例を出す */}
+      {session.showNames && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          {participants.map((p) => (
+            <span
+              key={p.uid}
+              className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-white/70 px-2 py-0.5 text-[11px] font-medium text-ink-soft"
+            >
+              <span
+                className="inline-block size-2.5 rounded-full"
+                style={{
+                  backgroundColor: p.color,
+                  outline: p.uid === uid ? '2px solid #21313a' : undefined,
+                  outlineOffset: 1,
+                }}
+              />
+              {p.name}
+              {p.uid === uid && ' (自分)'}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
         {rounds.length > 1 && (
           <Segmented

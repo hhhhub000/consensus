@@ -31,10 +31,12 @@ export function Reveal2D({
   onSelectCard,
   visibleCardIds,
 }: Props) {
-  const nameOf = useMemo(() => {
-    const m = new Map(participants.map((p) => [p.uid, p.name]))
-    return (uid: string) => m.get(uid) ?? '参加者'
-  }, [participants])
+  const byUid = useMemo(
+    () => new Map(participants.map((p) => [p.uid, p])),
+    [participants],
+  )
+  const nameOf = (uid: string) => byUid.get(uid)?.name ?? '参加者'
+  const colorOf = (uid: string) => byUid.get(uid)?.color ?? '#8b9aa0'
 
   if (mode === 'grid') {
     return (
@@ -129,6 +131,7 @@ export function Reveal2D({
               myUid={myUid}
               withDots
               nameOf={showNames ? nameOf : undefined}
+              colorOf={showNames ? colorOf : undefined}
               prev={prevStats?.get(selected.card.id)}
             />
           )}
@@ -157,6 +160,7 @@ function CardCloud({
   withLabel,
   mini,
   nameOf,
+  colorOf,
   prev,
 }: {
   stat: CardStat
@@ -165,6 +169,8 @@ function CardCloud({
   withLabel?: boolean
   mini?: boolean
   nameOf?: (uid: string) => string
+  /** 指定時 (名前表示中) はドットを人物ごとの色で塗り分け */
+  colorOf?: (uid: string) => string
   prev?: CardStat
 }) {
   const color = stat.card.color
@@ -216,15 +222,17 @@ function CardCloud({
       {withDots &&
         stat.points.map((pt) => {
           const own = pt.uid === myUid
+          const fill = colorOf ? colorOf(pt.uid) : own ? '#d8492b' : '#ffffff'
+          const stroke = colorOf ? (own ? '#21313a' : '#ffffff') : own ? '#ffffff' : '#21313a'
           return (
             <g key={pt.uid}>
               <circle
                 cx={pt.pos.x * 100}
                 cy={pt.pos.y * 100}
                 r={own ? 2.4 : 2}
-                fill={own ? '#d8492b' : '#ffffff'}
-                stroke={own ? '#ffffff' : '#21313a'}
-                strokeWidth={0.6}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth={own && colorOf ? 0.9 : 0.6}
               >
                 <title>{own ? '自分' : nameOf ? nameOf(pt.uid) : '参加者'}</title>
               </circle>

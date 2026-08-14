@@ -35,10 +35,12 @@ export function Reveal1D({
   axisMinLabel,
   axisMaxLabel,
 }: Props) {
-  const nameOf = useMemo(() => {
-    const m = new Map(participants.map((p) => [p.uid, p.name]))
-    return (uid: string) => m.get(uid) ?? '参加者'
-  }, [participants])
+  const byUid = useMemo(
+    () => new Map(participants.map((p) => [p.uid, p])),
+    [participants],
+  )
+  const nameOf = (uid: string) => byUid.get(uid)?.name ?? '参加者'
+  const colorOf = (uid: string) => byUid.get(uid)?.color ?? '#8b9aa0'
 
   const pct = (v: number) => `${(v * 100).toFixed(2)}%`
 
@@ -167,15 +169,28 @@ export function Reveal1D({
                         const jitter =
                           ((hashString(pt.uid + s.card.id) % 1000) / 1000 - 0.5) * 22
                         const own = pt.uid === myUid
+                        // 名前表示中は人物ごとの色で塗り分け (自分は濃い縁取り)
+                        const fill = showNames
+                          ? colorOf(pt.uid)
+                          : own
+                            ? '#d8492b'
+                            : '#ffffff'
+                        const stroke = showNames
+                          ? own
+                            ? '#21313a'
+                            : '#ffffff'
+                          : own
+                            ? '#ffffff'
+                            : '#21313a'
                         return (
                           <circle
                             key={pt.uid}
                             cx={pct(pt.pos.x)}
                             cy={MID_Y + jitter}
                             r={own ? 5 : 4}
-                            fill={own ? '#d8492b' : '#ffffff'}
-                            stroke={own ? '#ffffff' : '#21313a'}
-                            strokeWidth={1.4}
+                            fill={fill}
+                            stroke={stroke}
+                            strokeWidth={own && showNames ? 2 : 1.4}
                           >
                             <title>
                               {own
