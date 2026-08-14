@@ -11,10 +11,8 @@ export interface Template {
 }
 
 /**
- * 並び順はUI (3列グリッド) で系統ごとに行がまとまるように:
- * 1行目 = ゲーム系 (実生活では使わない定番コンセンサスゲーム)
- * 2行目 = 日常系
- * 3行目 = ビジネス系
+ * 並び順は系統ごとに隣り合うように:
+ * ゲーム系 (2) → 日常系 (5) → ビジネス系 (2) の計9種
  */
 export const TEMPLATES: Template[] = [
   /* ---- ゲーム系 ---- */
@@ -65,29 +63,6 @@ export const TEMPLATES: Template[] = [
       { label: '双眼鏡' },
     ],
   },
-  {
-    id: 'desert',
-    name: '砂漠サバイバル',
-    emoji: '🏜️',
-    tagline: '飛行機が砂漠に不時着。日中は40℃超。救助を待つために残す物は?',
-    axisType: '1d',
-    axes: { x: { label: '優先度', minLabel: '低い', maxLabel: '高い' } },
-    cards: [
-      { label: '化粧用の鏡' },
-      { label: 'オーバーコート' },
-      { label: '水 (1人1L)' },
-      { label: '懐中電灯' },
-      { label: '赤白のパラシュート' },
-      { label: 'ナイフ' },
-      { label: '拳銃' },
-      { label: 'サングラス' },
-      { label: '救急箱' },
-      { label: '磁石コンパス' },
-      { label: '航空地図' },
-      { label: 'ウォッカ (2L)' },
-    ],
-  },
-
   /* ---- 日常系 ---- */
   {
     id: 'moving',
@@ -135,6 +110,52 @@ export const TEMPLATES: Template[] = [
       { label: 'ハンバーグ' },
       { label: '刺身と味噌汁' },
       { label: 'テイクアウトピザ' },
+    ],
+  },
+  {
+    id: 'travel',
+    name: '旅行プランの優先度',
+    emoji: '✈️',
+    tagline: '次の旅行、何を優先する? やりたいこと×費用で全員の理想を見える化',
+    axisType: '2d',
+    axes: {
+      x: { label: 'やりたい度', minLabel: '低い', maxLabel: '高い' },
+      y: { label: '費用・手間', minLabel: '小さい', maxLabel: '大きい' },
+    },
+    cards: [
+      { label: '温泉' },
+      { label: 'グルメ・名物料理' },
+      { label: '観光名所めぐり' },
+      { label: '自然・絶景' },
+      { label: 'テーマパーク' },
+      { label: 'ショッピング' },
+      { label: 'のんびり滞在' },
+      { label: 'アクティビティ体験' },
+      { label: '美術館・博物館' },
+      { label: '夜景・ナイトライフ' },
+    ],
+  },
+  {
+    id: 'housework',
+    name: '家事分担の見直し',
+    emoji: '🧺',
+    tagline: 'どの家事が重い? 負担感×頻度で「見えない負担」を共有する',
+    axisType: '2d',
+    axes: {
+      x: { label: '負担感', minLabel: '軽い', maxLabel: '重い' },
+      y: { label: '頻度', minLabel: '低い', maxLabel: '高い' },
+    },
+    cards: [
+      { label: '料理' },
+      { label: '食器洗い' },
+      { label: '洗濯' },
+      { label: '掃除機がけ' },
+      { label: '風呂掃除' },
+      { label: 'トイレ掃除' },
+      { label: 'ゴミ出し' },
+      { label: '買い出し' },
+      { label: '衣類の管理・アイロン' },
+      { label: '名もなき家事 (在庫管理等)' },
     ],
   },
   {
@@ -203,29 +224,6 @@ export const TEMPLATES: Template[] = [
       { label: 'リモートワーク' },
       { label: '職場環境・設備' },
       { label: '雇用の安定性' },
-    ],
-  },
-  {
-    id: 'team-issues',
-    name: 'チーム課題マップ',
-    emoji: '🧩',
-    tagline: 'チームの「もやもや」を緊急度×重要度で仕分けし、次に手を付ける課題を合意する',
-    axisType: '2d',
-    axes: {
-      x: { label: '重要度', minLabel: '低い', maxLabel: '高い' },
-      y: { label: '緊急度', minLabel: '低い', maxLabel: '高い' },
-    },
-    cards: [
-      { label: '会議が多すぎる' },
-      { label: 'ドキュメント不足' },
-      { label: '業務の属人化' },
-      { label: 'テスト不足' },
-      { label: 'コミュニケーション不足' },
-      { label: '技術的負債' },
-      { label: '目標が不明確' },
-      { label: 'ツール・環境が古い' },
-      { label: '振り返りの形骸化' },
-      { label: '採用・オンボーディング' },
     ],
   },
 ]
