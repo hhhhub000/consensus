@@ -123,30 +123,54 @@ export default function HomePage() {
   )
 }
 
-/** 過去に作成/参加したルームへのリンク (履歴が無ければ非表示) */
+/** 過去に作成/参加したルームへの入口 (履歴が無ければ非表示) */
 function RoomHistoryLinks() {
   const [history] = useState(() => listRoomHistory())
-  const created = history.filter((h) => h.role === 'creator').length
-  const joined = history.filter((h) => h.role === 'participant').length
-  if (!created && !joined) return null
+  const created = history.filter((h) => h.role === 'creator')
+  const joined = history.filter((h) => h.role === 'participant')
+  if (!created.length && !joined.length) return null
 
-  const linkClass =
-    'inline-flex items-center gap-2 rounded-lg border border-ink/15 bg-white/80 px-4 py-2.5 text-sm font-medium text-ink hover:border-ink/40 hover:shadow-card'
+  const preview = (titles: string[]) => {
+    const head = titles.slice(0, 3).join('、')
+    return titles.length > 3 ? `${head} など` : head
+  }
+
+  const card = (
+    to: string,
+    emoji: string,
+    label: string,
+    items: { title: string }[],
+  ) => (
+    <Link
+      to={to}
+      className="group rounded-xl border border-ink/10 bg-surface p-5 shadow-card transition-shadow hover:shadow-lift"
+    >
+      <div className="flex items-start justify-between">
+        <span className="text-3xl">{emoji}</span>
+        <Badge>{items.length}件</Badge>
+      </div>
+      <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
+        {label}
+      </h3>
+      <p className="mt-1 line-clamp-1 text-[13px] leading-6 text-ink-soft">
+        {preview(items.map((i) => i.title))}
+      </p>
+    </Link>
+  )
+
   return (
-    <div className="mx-auto flex max-w-5xl flex-wrap gap-3 px-4 pt-8">
-      {created > 0 && (
-        <Link to="/rooms?tab=created" className={linkClass}>
-          🕘 過去作成したルーム
-          <span className="font-mono text-xs text-ink-soft">{created}</span>
-        </Link>
-      )}
-      {joined > 0 && (
-        <Link to="/rooms?tab=joined" className={linkClass}>
-          🕘 過去参加したルーム
-          <span className="font-mono text-xs text-ink-soft">{joined}</span>
-        </Link>
-      )}
-    </div>
+    <section className="mx-auto max-w-5xl px-4 pt-10">
+      <h2 className="font-display text-2xl font-bold">過去のルーム</h2>
+      <p className="mt-1 text-[15px] text-ink-soft">
+        このブラウザで作成・参加したルームの履歴です。途中のルームにも戻れます。
+      </p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {created.length > 0 &&
+          card('/rooms?tab=created', '🕘', '過去作成したルーム', created)}
+        {joined.length > 0 &&
+          card('/rooms?tab=joined', '🚪', '過去参加したルーム', joined)}
+      </div>
+    </section>
   )
 }
 
