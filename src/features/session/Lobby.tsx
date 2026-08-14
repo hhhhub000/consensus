@@ -37,12 +37,14 @@ export function Lobby({
             </li>
           ))}
         </ul>
-        <div className="mt-5 rounded-lg bg-paper p-3 text-xs leading-6 text-ink-soft">
+        <div className="mt-5 rounded-lg bg-paper p-4 text-sm leading-6 text-ink-soft">
           <p className="font-bold text-ink">このあとの流れ</p>
-          <p>
-            1. 各自がひとりでカードを配置 (他の人には見えません) → 2. 全員の配置を一斉開示 →
-            3. バラツキを見ながら議論 → 必要なら再ラウンド → 4. 全員で合意ボードを完成
-          </p>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-5">
+            <li>各自がひとりでカードを配置 (他の人には見えません)</li>
+            <li>全員の配置を一斉開示</li>
+            <li>バラツキを見ながら議論 (必要なら再ラウンド)</li>
+            <li>全員で合意ボードを完成</li>
+          </ol>
         </div>
       </Panel>
     </div>
