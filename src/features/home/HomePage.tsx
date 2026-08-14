@@ -1,6 +1,12 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '../../components/ui'
 import { TEMPLATES } from '../../data/templates'
+import {
+  deleteMyTemplate,
+  listMyTemplates,
+  type MyTemplate,
+} from '../../lib/templateStore'
 
 const STEPS = [
   {
@@ -80,6 +86,8 @@ export default function HomePage() {
         </ol>
       </section>
 
+      <MyTemplatesSection />
+
       <section id="templates" className="mx-auto max-w-5xl px-4 pb-20">
         <h2 className="font-display text-2xl font-bold">テンプレート</h2>
         <p className="mt-1 text-[15px] text-ink-soft">
@@ -109,6 +117,59 @@ export default function HomePage() {
         Consensus — 意見を並べて、合意をつくる
       </footer>
     </div>
+  )
+}
+
+/** テーマ作成画面で保存したマイテンプレートの一覧 (無ければ非表示) */
+function MyTemplatesSection() {
+  const [items, setItems] = useState<MyTemplate[]>(() => listMyTemplates())
+  if (!items.length) return null
+
+  const remove = (t: MyTemplate) => {
+    if (!confirm(`マイテンプレート「${t.title}」を削除しますか?`)) return
+    deleteMyTemplate(t.id)
+    setItems(listMyTemplates())
+  }
+
+  return (
+    <section className="mx-auto max-w-5xl px-4 pb-4">
+      <h2 className="font-display text-2xl font-bold">マイテンプレート</h2>
+      <p className="mt-1 text-[15px] text-ink-soft">
+        テーマ作成画面で保存した、あなた専用のテンプレートです (このブラウザ内に保存)。
+      </p>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.map((t) => (
+          <div
+            key={t.id}
+            className="group relative rounded-xl border border-ink/10 bg-surface p-5 shadow-card transition-shadow hover:shadow-lift"
+          >
+            <Link to={`/create?my=${t.id}`} className="block">
+              <div className="flex items-start justify-between pr-8">
+                <span className="text-3xl">📌</span>
+                <Badge>
+                  {t.axisType === '1d' ? '1軸' : '2軸'} ・ {t.cards.length}枚
+                </Badge>
+              </div>
+              <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
+                {t.title}
+              </h3>
+              <p className="mt-1 text-[13px] leading-6 text-ink-soft">
+                {new Date(t.savedAt).toLocaleDateString('ja-JP')} 保存 ・ 軸: {t.axes.x.label}
+                {t.axes.y ? ` × ${t.axes.y.label}` : ''}
+              </p>
+            </Link>
+            <button
+              type="button"
+              aria-label={`「${t.title}」を削除`}
+              onClick={() => remove(t)}
+              className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full text-ink-faint hover:bg-accent-soft hover:text-accent-deep"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 

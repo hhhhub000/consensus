@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import type { DriveStep } from 'driver.js'
 import { Button, Field, InfoTip, Input, Panel, Segmented, Spinner } from '../../components/ui'
 import { getTemplate } from '../../data/templates'
+import { getMyTemplate, saveMyTemplate } from '../../lib/templateStore'
 import { createSession } from '../../lib/db'
 import { useAuthUid } from '../../lib/firebase'
 import { startTour, useTour } from '../../lib/tour'
@@ -58,25 +59,61 @@ const CREATE_TOUR: DriveStep[] = [
   },
 ]
 
+interface Preset {
+  heading: string
+  tagline?: string
+  title: string
+  axisType: AxisType
+  axes: { x: AxisDef; y?: AxisDef }
+  cards: { label: string }[]
+  templateId?: string
+}
+
 export default function CreatePage() {
   const [params] = useSearchParams()
-  const template = useMemo(() => getTemplate(params.get('template')), [params])
+  const preset = useMemo<Preset | undefined>(() => {
+    const template = getTemplate(params.get('template'))
+    if (template) {
+      return {
+        heading: `${template.emoji} ${template.name}`,
+        tagline: template.tagline,
+        title: template.name,
+        axisType: template.axisType,
+        axes: template.axes,
+        cards: template.cards,
+        templateId: template.id,
+      }
+    }
+    const mine = getMyTemplate(params.get('my'))
+    if (mine) {
+      return {
+        heading: `📌 ${mine.title}`,
+        tagline: 'マイテンプレートから作成',
+        title: mine.title,
+        axisType: mine.axisType,
+        axes: mine.axes,
+        cards: mine.cards,
+      }
+    }
+    return undefined
+  }, [params])
   const uid = useAuthUid()
   const navigate = useNavigate()
 
   const [name, setName] = useState(() => localStorage.getItem('consensus:name') ?? '')
-  const [title, setTitle] = useState(template?.name ?? '')
-  const [axisType, setAxisType] = useState<AxisType>(template?.axisType ?? '1d')
-  const [axisX, setAxisX] = useState<AxisDef>(template?.axes.x ?? DEFAULT_X)
-  const [axisY, setAxisY] = useState<AxisDef>(template?.axes.y ?? DEFAULT_Y)
+  const [title, setTitle] = useState(preset?.title ?? '')
+  const [axisType, setAxisType] = useState<AxisType>(preset?.axisType ?? '1d')
+  const [axisX, setAxisX] = useState<AxisDef>(preset?.axes.x ?? DEFAULT_X)
+  const [axisY, setAxisY] = useState<AxisDef>(preset?.axes.y ?? DEFAULT_Y)
   const [cards, setCards] = useState<CardDraft[]>(() =>
-    (template?.cards ?? [{ label: '' }, { label: '' }, { label: '' }]).map((c) => ({
+    (preset?.cards ?? [{ label: '' }, { label: '' }, { label: '' }]).map((c) => ({
       key: randomId(6),
       label: c.label,
     })),
   )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [savedMsg, setSavedMsg] = useState(false)
 
   useTour('create', () => CREATE_TOUR)
 
@@ -85,6 +122,19 @@ export default function CreatePage() {
   const validCards = cards.filter((c) => c.label.trim())
   const canSubmit =
     !submitting && name.trim() && title.trim() && validCards.length >= 2 && axisX.minLabel.trim()
+  const canSave = Boolean(title.trim()) && validCards.length >= 2
+
+  const saveAsMyTemplate = () => {
+    if (!canSave) return
+    saveMyTemplate({
+      title: title.trim(),
+      axisType,
+      axes: axisType === '2d' ? { x: axisX, y: axisY } : { x: axisX },
+      cards: validCards.map((c) => ({ label: c.label.trim() })),
+    })
+    setSavedMsg(true)
+    setTimeout(() => setSavedMsg(false), 2500)
+  }
 
   const submit = async () => {
     if (!canSubmit) return
@@ -102,7 +152,7 @@ export default function CreatePage() {
             label: c.label.trim(),
             color: colorAt(i),
           })),
-          templateId: template?.id,
+          templateId: preset?.templateId,
         },
         uid,
         name.trim(),
@@ -134,10 +184,8 @@ export default function CreatePage() {
         </span>
       </header>
 
-      <h1 className="font-display text-2xl font-bold">
-        {template ? `${template.emoji} ${template.name}` : '新しいテーマ'}
-      </h1>
-      {template && <p className="mt-1 text-sm text-ink-soft">{template.tagline}</p>}
+      <h1 className="font-display text-2xl font-bold">{preset?.heading ?? '新しいテーマ'}</h1>
+      {preset?.tagline && <p className="mt-1 text-sm text-ink-soft">{preset.tagline}</p>}
 
       <div className="mt-6 space-y-6">
         <Panel className="space-y-4 p-5" data-tour="create-basic">
@@ -270,7 +318,7 @@ export default function CreatePage() {
 
         {error && <p className="text-sm font-medium text-accent-deep">{error}</p>}
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="accent"
             size="lg"
@@ -280,7 +328,19 @@ export default function CreatePage() {
           >
             {submitting ? '作成中...' : 'テーマを作成して招待URLを発行'}
           </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            disabled={!canSave}
+            onClick={saveAsMyTemplate}
+            title="このテーマ設定 (テーマ名・軸・カード) をこのブラウザに保存し、ホームからいつでも呼び出せるようにします"
+          >
+            {savedMsg ? '保存しました ✓' : 'マイテンプレートとして保存'}
+          </Button>
         </div>
+        <p className="text-[13px] text-ink-soft">
+          「マイテンプレート」はこのブラウザ内に保存され、ホーム画面から再利用できます。
+        </p>
       </div>
     </div>
   )
