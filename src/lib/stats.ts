@@ -95,7 +95,10 @@ export interface Ellipse {
 }
 
 /**
- * 標準偏差楕円 (k=1.5σ)。点が2つ未満なら null。
+ * 標準偏差楕円。点が2つ未満なら null。
+ * 母分散 (n で割る) ベースの k σ を基本としつつ、
+ * 「実データの主軸方向の最大広がり + 余白」を超えないよう半径をクランプする。
+ * (少人数のとき、不偏分散だと楕円が点の両端を大きくはみ出すため)
  */
 export function sdEllipse(points: Pos[], k = 1.5): Ellipse | null {
   const n = points.length
@@ -111,21 +114,34 @@ export function sdEllipse(points: Pos[], k = 1.5): Ellipse | null {
     syy += dy * dy
     sxy += dx * dy
   }
-  const d = n - 1
-  sxx /= d
-  syy /= d
-  sxy /= d
+  sxx /= n
+  syy /= n
+  sxy /= n
   const tr2 = (sxx + syy) / 2
   const det = Math.sqrt(((sxx - syy) / 2) ** 2 + sxy * sxy)
   const l1 = Math.max(tr2 + det, 0)
   const l2 = Math.max(tr2 - det, 0)
-  const angle = (0.5 * Math.atan2(2 * sxy, sxx - syy) * 180) / Math.PI
+  const angleRad = 0.5 * Math.atan2(2 * sxy, sxx - syy)
+
+  // 各点を主軸/副軸へ射影した最大距離 (= データの実際の広がり)
+  const cos = Math.cos(angleRad)
+  const sin = Math.sin(angleRad)
+  let maxProj1 = 0
+  let maxProj2 = 0
+  for (const p of points) {
+    const dx = p.x - c.x
+    const dy = p.y - c.y
+    maxProj1 = Math.max(maxProj1, Math.abs(dx * cos + dy * sin))
+    maxProj2 = Math.max(maxProj2, Math.abs(-dx * sin + dy * cos))
+  }
+
   const MIN_R = 0.02
+  const PAD = 0.03
   return {
     cx: c.x,
     cy: c.y,
-    rx: Math.max(k * Math.sqrt(l1), MIN_R),
-    ry: Math.max(k * Math.sqrt(l2), MIN_R),
-    angle,
+    rx: Math.max(Math.min(k * Math.sqrt(l1), maxProj1 + PAD), MIN_R),
+    ry: Math.max(Math.min(k * Math.sqrt(l2), maxProj2 + PAD), MIN_R),
+    angle: (angleRad * 180) / Math.PI,
   }
 }

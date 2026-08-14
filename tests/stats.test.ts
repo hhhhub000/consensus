@@ -85,6 +85,26 @@ describe('sdEllipse', () => {
   it('returns null for fewer than 2 points', () => {
     expect(sdEllipse([{ x: 0.5, y: 0.5 }])).toBeNull()
   })
+  it('2点のとき楕円が点の両端を大きくはみ出さない', () => {
+    const a = { x: 0.2, y: 0.5 }
+    const b = { x: 0.8, y: 0.5 }
+    const e = sdEllipse([a, b])!
+    const halfDist = 0.3 // 中心から各点までの距離
+    // 主軸半径は「点までの距離 + 余白 (0.03)」以下
+    expect(e.rx).toBeLessThanOrEqual(halfDist + 0.03 + 1e-9)
+    expect(e.rx).toBeGreaterThan(halfDist * 0.8)
+    // 直交方向はほぼ広がりゼロ → 最小半径に張り付く
+    expect(e.ry).toBeLessThanOrEqual(0.05)
+  })
+  it('多人数でも楕円はデータの広がり + 余白に収まる', () => {
+    const pts = Array.from({ length: 12 }, (_, i) => ({
+      x: 0.5 + 0.2 * Math.cos((i / 12) * Math.PI * 2),
+      y: 0.5 + 0.1 * Math.sin((i / 12) * Math.PI * 2),
+    }))
+    const e = sdEllipse(pts)!
+    expect(e.rx).toBeLessThanOrEqual(0.2 + 0.03 + 1e-9)
+    expect(e.ry).toBeLessThanOrEqual(0.1 + 0.03 + 1e-9)
+  })
   it('elongated data has rx > ry and near-zero angle', () => {
     const pts = [
       { x: 0.1, y: 0.5 },
