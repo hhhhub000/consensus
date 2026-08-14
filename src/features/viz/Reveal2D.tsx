@@ -225,6 +225,16 @@ function CardCloud({
           />
         </>
       )}
+      {/* 重心は個人ドットより背面に描く (重なってもドットにフォーカスできるように) */}
+      <circle
+        cx={cx}
+        cy={cy}
+        r={mini ? 2.2 : 1.8}
+        fill={color}
+        stroke="#ffffff"
+        strokeWidth={0.6}
+        pointerEvents="none"
+      />
       {withDots &&
         stat.points.map((pt) => {
           const own = pt.uid === myUid
@@ -288,14 +298,6 @@ function CardCloud({
             </g>
           )
         })}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={mini ? 2.2 : 1.8}
-        fill={color}
-        stroke="#ffffff"
-        strokeWidth={0.6}
-      />
       {withLabel && (
         <text
           x={cx}
