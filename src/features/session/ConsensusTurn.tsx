@@ -45,7 +45,7 @@ export function ConsensusTurn({
     <div>
       <div className="mb-3">
         <h2 className="font-display text-lg font-bold">合意ボード — 全員で1枚をつくる</h2>
-        <p className="text-xs text-ink-soft">
+        <p className="text-sm text-ink-soft">
           誰でもカードを動かせます。動かすと全員の画面に即時反映。カードを触ると、そのカードの開示時の分布が背景に表示されます
           — 分布から大きく外れた合意には立ち止まりましょう。
         </p>

@@ -41,7 +41,7 @@ export default function HomePage() {
               <br />
               それから、開示する。
             </h1>
-            <p className="mt-6 max-w-xl text-sm leading-7 text-ink-soft md:text-base">
+            <p className="mt-6 max-w-xl text-[15px] leading-8 text-ink-soft md:text-base">
               話し合いから始めると、意見は最初の発言に引っ張られます。Consensus
               は「先に各自の考えを配置 →
               一斉開示」の順番を強制することで、同調圧力のかかっていない生の意見分布から合意形成を始められるボードです。
@@ -60,7 +60,7 @@ export default function HomePage() {
                 自分でテーマを作る
               </Link>
             </div>
-            <p className="mt-4 text-xs text-ink-faint">
+            <p className="mt-4 text-sm text-ink-soft">
               ログイン不要・URLを共有するだけで参加できます
             </p>
           </div>
@@ -74,7 +74,7 @@ export default function HomePage() {
             <li key={s.num} className="rounded-xl border border-ink/10 bg-surface p-6 shadow-card">
               <span className="font-display text-2xl font-bold text-accent">{s.num}</span>
               <h2 className="mt-2 font-display text-lg font-bold">{s.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-ink-soft">{s.body}</p>
+              <p className="mt-2 text-[15px] leading-7 text-ink-soft">{s.body}</p>
             </li>
           ))}
         </ol>
@@ -82,7 +82,7 @@ export default function HomePage() {
 
       <section id="templates" className="mx-auto max-w-5xl px-4 pb-20">
         <h2 className="font-display text-2xl font-bold">テンプレート</h2>
-        <p className="mt-1 text-sm text-ink-soft">
+        <p className="mt-1 text-[15px] text-ink-soft">
           選ぶとテーマ・軸・カードが入った状態で編集画面が開きます。
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -99,7 +99,7 @@ export default function HomePage() {
               <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
                 {t.name}
               </h3>
-              <p className="mt-1 text-xs leading-5 text-ink-soft">{t.tagline}</p>
+              <p className="mt-1 text-[13px] leading-6 text-ink-soft">{t.tagline}</p>
             </Link>
           ))}
         </div>

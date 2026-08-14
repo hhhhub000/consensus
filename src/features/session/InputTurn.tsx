@@ -107,7 +107,7 @@ export function InputTurn({
               ? 使い方
             </button>
           </h2>
-          <p className="text-xs text-ink-soft">
+          <p className="text-sm text-ink-soft">
             他の人の配置は開示まで見えません。直感で置いてOK。あとから何度でも動かせます。
           </p>
         </div>
@@ -128,7 +128,7 @@ export function InputTurn({
       </div>
 
       {isReady && (
-        <p className="mb-3 rounded-lg border border-ok/30 bg-white/70 px-3 py-2 text-xs text-ink-soft">
+        <p className="mb-3 rounded-lg border border-ok/30 bg-white/70 px-3 py-2 text-sm text-ink-soft">
           配置完了を宣言しました ({readyCount}/{participants.length}人)。開示までこのまま待つか、まだ動かして調整もできます。
         </p>
       )}

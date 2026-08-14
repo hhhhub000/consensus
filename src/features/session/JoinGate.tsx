@@ -57,7 +57,7 @@ export function JoinGate({
         </Button>
       </Panel>
 
-      <p className="mt-4 text-center text-xs leading-5 text-ink-faint">
+      <p className="mt-4 text-center text-sm leading-7 text-ink-soft">
         まず一人で考えてカードを配置し、全員の配置が揃ったら一斉に開示されます。
         <br />
         開示までお互いの意見は見えません。

@@ -145,7 +145,7 @@ export function RevealTurn({
           {participants.map((p) => (
             <span
               key={p.uid}
-              className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-white/70 px-2 py-0.5 text-[11px] font-medium text-ink-soft"
+              className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-white/70 px-2 py-0.5 text-xs font-medium text-ink-soft"
             >
               <span
                 className="inline-block size-2.5 rounded-full"
@@ -162,7 +162,7 @@ export function RevealTurn({
         </div>
       )}
 
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs" data-tour="reveal-controls">
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]" data-tour="reveal-controls">
         {rounds.length > 1 && (
           <Segmented
             size="sm"
@@ -235,7 +235,7 @@ export function RevealTurn({
                     return next
                   })
                 }
-                className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
                   visible
                     ? 'border-ink/15 bg-white text-ink'
                     : 'border-ink/10 bg-paper text-ink-faint line-through'
@@ -284,7 +284,7 @@ export function RevealTurn({
               visibleCardIds={visibleCardIds}
             />
           )}
-          <p className="mt-2 text-[11px] text-ink-faint">
+          <p className="mt-2 text-[13px] leading-6 text-ink-soft">
             {session.axisType === '1d'
               ? '横帯 = 最小〜最大の範囲、濃さ = 意見の集中度、太い縦線 = 中央値。'
               : '楕円 = 意見の散らばり (標準偏差楕円)、点 = 重心。'}

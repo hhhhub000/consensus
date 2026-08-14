@@ -56,7 +56,7 @@ export function Reveal2D({
               </svg>
             </div>
             <div className="mt-1.5 flex items-center justify-between gap-1 px-0.5">
-              <span className="truncate text-[11px] font-medium">
+              <span className="truncate text-xs font-medium">
                 <span
                   className="mr-1 inline-block size-2 rounded-full align-middle"
                   style={{ backgroundColor: s.card.color }}
@@ -86,7 +86,7 @@ export function Reveal2D({
               key={s.card.id}
               type="button"
               onClick={() => onSelectCard(s.card.id)}
-              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${
+              className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
                 s.card.id === selected?.card.id
                   ? 'border-ink bg-ink text-white'
                   : 'border-ink/15 bg-white/70 text-ink-soft hover:border-ink/40'

@@ -48,16 +48,16 @@ export function Reveal1D({
     <div className="overflow-hidden rounded-xl border border-ink/15 bg-surface shadow-card">
       {/* 軸ヘッダー (入力ボードと同じ向き・同じ表現) */}
       <div className="grid grid-cols-[7rem_1fr] items-end gap-2 border-b border-ink/10 px-3 pb-1.5 pt-2 sm:grid-cols-[9rem_1fr]">
-        <span className="text-[10px] font-bold text-ink-faint">カード</span>
+        <span className="text-[11px] font-bold text-ink-faint">カード</span>
         <div>
           <svg className="block h-3.5 w-full" preserveAspectRatio="none" viewBox="0 0 100 14" aria-hidden>
             <polygon points="0,12 100,12 100,1" fill="#21313a" opacity="0.09" />
             <line x1="0" y1="13" x2="100" y2="13" stroke="#c9d3d0" strokeWidth="1.5" />
           </svg>
-          <div className="flex items-baseline justify-between text-[11px] text-ink-soft">
+          <div className="flex items-baseline justify-between text-xs text-ink-soft">
             <span>← {axisMinLabel}</span>
             <span className="font-bold text-ink">{axisLabel}</span>
-            <span className="text-[12px] font-bold text-ink">{axisMaxLabel} →</span>
+            <span className="text-[13px] font-bold text-ink">{axisMaxLabel} →</span>
           </div>
         </div>
       </div>
@@ -74,14 +74,14 @@ export function Reveal1D({
             >
               {/* 左: カード情報 */}
               <div className="py-1.5">
-                <p className="line-clamp-2 text-[11px] font-medium leading-4 text-ink">
+                <p className="line-clamp-2 text-xs font-medium leading-4 text-ink">
                   <span
                     className="mr-1 inline-block size-2 rounded-full align-middle"
                     style={{ backgroundColor: s.card.color }}
                   />
                   {s.card.label}
                 </p>
-                <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-ink-faint">
+                <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-ink-faint">
                   {s.n}人
                   {s.n >= 2 && <AgreementChip value={s.agreement} />}
                 </p>

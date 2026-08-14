@@ -22,7 +22,7 @@ export function AgreementPanel({
 
   if (!rows.length) {
     return (
-      <p className="rounded-lg border border-ink/10 bg-white/60 p-4 text-xs text-ink-soft">
+      <p className="rounded-lg border border-ink/10 bg-white/60 p-4 text-sm text-ink-soft">
         2人以上が配置したカードがまだありません。
       </p>
     )
@@ -33,13 +33,13 @@ export function AgreementPanel({
   return (
     <div className="rounded-xl border border-ink/10 bg-surface shadow-card">
       <div className="flex items-baseline justify-between border-b border-ink/10 px-4 py-3">
-        <h3 className="font-display text-sm font-bold">議論ポイント</h3>
-        <span className="text-[11px] text-ink-faint">意見が割れている順</span>
+        <h3 className="font-display text-base font-bold">議論ポイント</h3>
+        <span className="text-xs text-ink-soft">意見が割れている順</span>
       </div>
-      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-3 gap-y-0 px-4 py-2 text-xs">
-        <span className="py-1 text-[10px] font-bold text-ink-faint">カード</span>
-        <span className="py-1 text-right text-[10px] font-bold text-ink-faint">合意度</span>
-        <span className="py-1 text-right text-[10px] font-bold text-ink-faint">自分のズレ</span>
+      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-3 gap-y-0 px-4 py-2 text-[13px]">
+        <span className="py-1 text-[11px] font-bold text-ink-faint">カード</span>
+        <span className="py-1 text-right text-[11px] font-bold text-ink-faint">合意度</span>
+        <span className="py-1 text-right text-[11px] font-bold text-ink-faint">自分のズレ</span>
         {rows.map(({ stat, gap }) => (
           <Row key={stat.card.id} stat={stat} gap={gap} maxGap={maxGap} />
         ))}
@@ -67,7 +67,7 @@ function Row({
           style={{ backgroundColor: stat.card.color }}
         />
         <span className="truncate">{stat.card.label}</span>
-        <span className="shrink-0 text-[10px] text-ink-faint">({stat.n}人)</span>
+        <span className="shrink-0 text-[11px] text-ink-faint">({stat.n}人)</span>
       </span>
       <span className="border-t border-ink/5 py-2 text-right">
         <span

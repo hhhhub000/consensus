@@ -178,11 +178,11 @@ export function PlacementBoard({
 
       {!disabled && (
         <div className="mt-3">
-          <div className="mb-1.5 flex items-baseline justify-between">
-            <span className="text-xs font-bold text-ink-soft">
+          <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+            <span className="text-[13px] font-bold text-ink-soft">
               カード置き場 ({cards.length - trayCards.length}/{cards.length} 配置済み)
             </span>
-            <span className="text-[11px] text-ink-faint">
+            <span className="text-xs text-ink-soft">
               {trayHint ?? 'ドラッグでボードへ。ボード外に出すと戻せます。全部置かなくてもOK'}
             </span>
           </div>
@@ -280,7 +280,7 @@ export function AxisFrame({
   axes: { x: AxisDef; y?: AxisDef }
 }) {
   return (
-    <div className="pointer-events-none absolute inset-0 select-none text-[11px] text-ink-soft">
+    <div className="pointer-events-none absolute inset-0 select-none text-xs text-ink-soft">
       {axisType === '2d' ? (
         <>
           <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-grid-strong" />

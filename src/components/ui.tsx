@@ -71,7 +71,7 @@ export function Field({
         {tip && <InfoTip>{tip}</InfoTip>}
       </span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-ink-faint">{hint}</span>}
+      {hint && <span className="mt-1 block text-[13px] text-ink-soft">{hint}</span>}
     </label>
   )
 }
@@ -108,7 +108,7 @@ export function Tip({
       {open && (
         <span
           role="tooltip"
-          className={`tip-bubble pointer-events-none absolute top-full z-40 mt-1.5 w-max max-w-[min(18rem,80vw)] rounded-lg bg-ink p-3 text-left text-xs font-normal leading-5 text-white shadow-lift ${pos}`}
+          className={`tip-bubble pointer-events-none absolute top-full z-40 mt-1.5 w-max max-w-[min(20rem,85vw)] rounded-lg bg-ink p-3.5 text-left text-[13px] font-normal leading-6 text-white shadow-lift ${pos}`}
         >
           {content}
         </span>

@@ -57,7 +57,7 @@ export function SessionHeader({ session }: { session: Session }) {
         {session.title}
       </h1>
       <div className="flex items-center gap-3">
-        <ol className="flex items-center gap-1 text-[11px]">
+        <ol className="flex items-center gap-1 text-xs">
           {PHASES.map((p, i) => (
             <li key={p.key} className="flex items-center gap-1">
               {i > 0 && <span className="text-ink-faint">·</span>}

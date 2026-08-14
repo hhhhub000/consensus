@@ -81,7 +81,7 @@ function InviteBox() {
           {copied ? 'コピーしました' : 'コピー'}
         </button>
       </div>
-      <p className="self-start text-xs text-ink-faint">
+      <p className="self-start text-sm text-ink-soft">
         URLを開くだけで参加できます。ログインは不要です。
       </p>
     </Panel>

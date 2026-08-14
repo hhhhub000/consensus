@@ -49,7 +49,7 @@ export function SummaryView({
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <h2 className="font-display text-xl font-bold">結果 — 合意ボード</h2>
-          <p className="mt-1 text-xs text-ink-soft">
+          <p className="mt-1 text-sm text-ink-soft">
             参加{participants.length}人 ・ {session.revealedUpTo}ラウンド ・ 合意配置 {placedCount}/
             {session.cards.length}枚。このページのURLがそのまま記録になります。
           </p>
