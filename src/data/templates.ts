@@ -68,12 +68,9 @@ export const TEMPLATES: Template[] = [
     id: 'moving',
     name: '引っ越し先の条件',
     emoji: '🏠',
-    tagline: '次の住まい、何を優先する? 「譲れない×金で解決できない」が真の制約',
-    axisType: '2d',
-    axes: {
-      x: { label: 'こだわり', minLabel: '妥協できる', maxLabel: '妥協できない' },
-      y: { label: '解決手段', minLabel: 'お金で解決できる', maxLabel: 'お金で解決できない' },
-    },
+    tagline: '次の住まい、何を優先する? 全部は叶わないから優先度を揃える',
+    axisType: '1d',
+    axes: { x: { label: '優先度', minLabel: '低い', maxLabel: '高い' } },
     cards: [
       { label: '家賃' },
       { label: '駅からの距離' },
