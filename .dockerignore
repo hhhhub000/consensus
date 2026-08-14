@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.tools
+.claude
+.firebase
+*.log
+.env
+.env.*

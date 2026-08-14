@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /sessions/{sessionId} {
+      function session() {
+        return get(/databases/$(database)/documents/sessions/$(sessionId)).data;
+      }
+
+      // URL を知っている参加者は誰でも閲覧可 (匿名認証は必須)
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.phase == 'lobby';
+      // フェーズ遷移・開示・名前表示切替は作成者のみ。作成者の移譲は不可
+      allow update: if request.auth != null
+        && resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdBy == resource.data.createdBy;
+
+      match /participants/{uid} {
+        allow read: if request.auth != null;
+        allow create, update: if request.auth != null && request.auth.uid == uid;
+      }
+
+      match /placements/{placementId} {
+        // 自分の配置はいつでも読める。他人の配置は開示済みラウンドのみ。
+        // (クエリには where('round', '<=', revealedUpTo) が必須)
+        // resource == null は「存在しないドキュメントの get」— not-found を返すため許可
+        allow read: if request.auth != null && (
+          resource == null
+          || resource.data.uid == request.auth.uid
+          || resource.data.round <= session().revealedUpTo
+        );
+        // 書けるのは「現在ラウンド」かつ「入力フェーズ中」の自分のドキュメントのみ
+        allow create, update: if request.auth != null
+          && request.resource.data.uid == request.auth.uid
+          && placementId == (string(request.resource.data.round) + '_' + request.auth.uid)
+          && request.resource.data.round == session().round
+          && session().phase == 'input';
+      }
+
+      match /consensus/{docId} {
+        allow read: if request.auth != null;
+        // 合意フェーズ中は全員が編集可。初期化は作成者が行う
+        allow write: if request.auth != null
+          && (session().phase == 'consensus' || session().createdBy == request.auth.uid);
+      }
+    }
+  }
+}
