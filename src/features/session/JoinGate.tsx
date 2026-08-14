@@ -45,7 +45,7 @@ export function JoinGate({
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例: ほくと"
+            placeholder="例: たろう"
             maxLength={20}
             onKeyDown={(e) => e.key === 'Enter' && join()}
             autoFocus
