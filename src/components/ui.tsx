@@ -1,4 +1,10 @@
-import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react'
+import {
+  useState,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from 'react'
 
 type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost'
 type ButtonSize = 'sm' | 'md' | 'lg'
@@ -136,12 +142,13 @@ export function InfoTip({
 export function Panel({
   className = '',
   children,
+  ...rest
 }: {
   className?: string
   children: ReactNode
-}) {
+} & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`rounded-xl border border-ink/10 bg-surface shadow-card ${className}`}>
+    <div className={`rounded-xl border border-ink/10 bg-surface shadow-card ${className}`} {...rest}>
       {children}
     </div>
   )

@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
+import type { DriveStep } from 'driver.js'
 import { Button, Field, InfoTip, Input, Panel, Segmented, Spinner } from '../../components/ui'
 import { getTemplate } from '../../data/templates'
 import { createSession } from '../../lib/db'
 import { useAuthUid } from '../../lib/firebase'
+import { startTour, useTour } from '../../lib/tour'
 import { colorAt, hashString, randomId } from '../../lib/utils'
 import type { AxisDef, AxisType } from '../../types'
 
@@ -14,6 +16,47 @@ interface CardDraft {
 
 const DEFAULT_X: AxisDef = { label: '優先度', minLabel: '低い', maxLabel: '高い' }
 const DEFAULT_Y: AxisDef = { label: '', minLabel: '低い', maxLabel: '高い' }
+
+const CREATE_TOUR: DriveStep[] = [
+  {
+    popover: {
+      title: 'テーマ作成へようこそ',
+      description:
+        'ここで作るテーマが議論の場になります。作成すると招待URLが発行され、メンバーはログイン不要で参加できます。',
+    },
+  },
+  {
+    element: '[data-tour="create-basic"]',
+    popover: {
+      title: '名前とテーマ',
+      description:
+        'あなたの表示名と、みんなで合意したい議題を入力します。各項目の i アイコンにも説明があります。',
+    },
+  },
+  {
+    element: '[data-tour="create-axis"]',
+    popover: {
+      title: '軸 = カードを並べるものさし',
+      description:
+        '1軸なら「優先度が高い⇔低い」のような一直線、2軸なら「価値×コスト」のような平面にカードを置きます。両端のラベルも自由に変えられます。',
+    },
+  },
+  {
+    element: '[data-tour="create-cards"]',
+    popover: {
+      title: 'カード = 議論の要素',
+      description:
+        '参加者はこのカードを軸の上にドラッグして意見を表明します。議論したい要素を1枚ずつ追加してください。',
+    },
+  },
+  {
+    element: '[data-tour="create-submit"]',
+    popover: {
+      title: '作成して招待',
+      description: '作成すると招待URLとQRコードが発行されます。あなたはファシリテーターとして進行役になります。',
+    },
+  },
+]
 
 export default function CreatePage() {
   const [params] = useSearchParams()
@@ -34,6 +77,8 @@ export default function CreatePage() {
   )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useTour('create', () => CREATE_TOUR)
 
   if (!uid) return <Spinner label="接続中..." />
 
@@ -77,7 +122,16 @@ export default function CreatePage() {
         <Link to="/" className="font-display text-lg font-bold">
           Consensus
         </Link>
-        <span className="text-xs text-ink-faint">テーマ作成</span>
+        <span className="flex items-center gap-3 text-xs text-ink-faint">
+          テーマ作成
+          <button
+            type="button"
+            onClick={() => startTour('create', CREATE_TOUR, true)}
+            className="rounded-md border border-ink/15 bg-white/70 px-2 py-1 font-medium text-ink-soft hover:border-ink/40"
+          >
+            ? 使い方
+          </button>
+        </span>
       </header>
 
       <h1 className="font-display text-2xl font-bold">
@@ -86,7 +140,7 @@ export default function CreatePage() {
       {template && <p className="mt-1 text-sm text-ink-soft">{template.tagline}</p>}
 
       <div className="mt-6 space-y-6">
-        <Panel className="space-y-4 p-5">
+        <Panel className="space-y-4 p-5" data-tour="create-basic">
           <Field
             label="あなたの表示名"
             hint="参加者に表示される名前です"
@@ -124,7 +178,7 @@ export default function CreatePage() {
           </Field>
         </Panel>
 
-        <Panel className="space-y-4 p-5">
+        <Panel className="space-y-4 p-5" data-tour="create-axis">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
               軸
@@ -160,7 +214,7 @@ export default function CreatePage() {
           )}
         </Panel>
 
-        <Panel className="p-5">
+        <Panel className="p-5" data-tour="create-cards">
           <div className="mb-3 flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
               カード ({validCards.length}枚)
@@ -217,7 +271,13 @@ export default function CreatePage() {
         {error && <p className="text-sm font-medium text-accent-deep">{error}</p>}
 
         <div className="flex items-center gap-3">
-          <Button variant="accent" size="lg" disabled={!canSubmit} onClick={submit}>
+          <Button
+            variant="accent"
+            size="lg"
+            disabled={!canSubmit}
+            onClick={submit}
+            data-tour="create-submit"
+          >
             {submitting ? '作成中...' : 'テーマを作成して招待URLを発行'}
           </Button>
         </div>

@@ -1,9 +1,45 @@
+import type { DriveStep } from 'driver.js'
 import { useEffect, useMemo, useState } from 'react'
 import { Button, Spinner } from '../../components/ui'
 import { fetchPlacement, savePlacement, setReady } from '../../lib/db'
+import { startTour, useTour } from '../../lib/tour'
 import { debounce } from '../../lib/utils'
 import type { Participant, Pos, Session } from '../../types'
 import { PlacementBoard } from '../board/PlacementBoard'
+
+const INPUT_TOUR: DriveStep[] = [
+  {
+    popover: {
+      title: '自分の考えで配置するターン',
+      description:
+        'このターンでは他の人の配置は一切見えません。周りを気にせず、まず自分の意見を固めましょう。',
+    },
+  },
+  {
+    element: '[data-tour="input-board"] .graph-paper',
+    popover: {
+      title: 'ボードに配置',
+      description:
+        'カードをドラッグして軸の上に置きます。位置は何度でも動かせて、自動保存されます。ボードの外へドラッグすると置き場に戻せます。',
+    },
+  },
+  {
+    element: '[data-tour="input-board"] .border-dashed',
+    popover: {
+      title: 'カード置き場',
+      description:
+        'まだ置いていないカードはここにあります。全部置かなくてもOK — 「対象外」という意思表示になります。',
+    },
+  },
+  {
+    element: '[data-tour="input-ready"]',
+    popover: {
+      title: '置き終わったら宣言',
+      description:
+        '「配置完了」を押すと進み具合が共有されます (配置の中身は見えません)。全員が揃うとファシリテーターが一斉開示します。',
+    },
+  },
+]
 
 export function InputTurn({
   session,
@@ -42,6 +78,8 @@ export function InputTurn({
     }
   }, [session.id, session.round, uid])
 
+  useTour('input', () => INPUT_TOUR, positions !== null)
+
   const debouncedSave = useMemo(
     () =>
       debounce((p: Record<string, Pos>) => {
@@ -59,8 +97,15 @@ export function InputTurn({
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-display text-lg font-bold">
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold">
             ラウンド{session.round}: 自分の考えで配置する
+            <button
+              type="button"
+              onClick={() => startTour('input', INPUT_TOUR, true)}
+              className="rounded-md border border-ink/15 bg-white/70 px-2 py-0.5 font-sans text-[11px] font-medium text-ink-soft hover:border-ink/40"
+            >
+              ? 使い方
+            </button>
           </h2>
           <p className="text-xs text-ink-soft">
             他の人の配置は開示まで見えません。直感で置いてOK。あとから何度でも動かせます。
@@ -70,6 +115,7 @@ export function InputTurn({
           <ReadyDots participants={participants} round={session.round} myUid={uid} />
           <Button
             variant={isReady ? 'outline' : 'accent'}
+            data-tour="input-ready"
             onClick={() =>
               setReady(session.id, uid, isReady ? session.round - 1 : session.round).catch(
                 console.error,
@@ -87,6 +133,7 @@ export function InputTurn({
         </p>
       )}
 
+      <div data-tour="input-board">
       <PlacementBoard
         axisType={session.axisType}
         axes={session.axes}
@@ -102,6 +149,7 @@ export function InputTurn({
           })
         }}
       />
+      </div>
     </div>
   )
 }

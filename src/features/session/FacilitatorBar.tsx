@@ -64,7 +64,10 @@ export function FacilitatorBar({
   }
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-accent/30 bg-accent-soft/60 px-4 py-2.5">
+    <div
+      className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border border-accent/30 bg-accent-soft/60 px-4 py-2.5"
+      data-tour="facilitator"
+    >
       <span className="text-[11px] font-bold tracking-wide text-accent-deep">
         ファシリテーター
       </span>

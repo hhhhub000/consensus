@@ -74,6 +74,28 @@ body {
   }
 }
 
+/* driver.js (チュートリアル) の見た目をアプリに合わせる */
+.driver-popover {
+  font-family: var(--font-sans);
+  border-radius: 12px;
+  color: var(--color-ink);
+}
+.driver-popover-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+}
+.driver-popover-description {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--color-ink-soft);
+}
+.driver-popover-progress-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-ink-faint);
+}
+
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;

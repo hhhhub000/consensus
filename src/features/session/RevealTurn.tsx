@@ -1,7 +1,9 @@
+import type { DriveStep } from 'driver.js'
 import { useEffect, useMemo, useState } from 'react'
 import { Segmented } from '../../components/ui'
 import { computeCardStats, overallAgreement, type CardStat } from '../../lib/derive'
 import { groupByRound } from '../../lib/hooks'
+import { startTour, useTour } from '../../lib/tour'
 import { formatPercent } from '../../lib/utils'
 import type { Participant, Placement, Session } from '../../types'
 import { AgreementPanel } from '../viz/AgreementPanel'
@@ -9,6 +11,55 @@ import { Reveal1D } from '../viz/Reveal1D'
 import { Reveal2D, type Mode2D } from '../viz/Reveal2D'
 
 type Sort1D = 'theme' | 'median' | 'agreement'
+
+function revealTourSteps(axisType: '1d' | '2d', isCreator: boolean): DriveStep[] {
+  const steps: DriveStep[] = [
+    {
+      popover: {
+        title: '一斉開示',
+        description:
+          '全員の意見が同時に公開されました。誰が先に言ったかは関係ありません — まずバラツキを眺めましょう。',
+      },
+    },
+    {
+      element: '[data-tour="reveal-board"]',
+      popover: {
+        title: '分布の見方',
+        description:
+          axisType === '1d'
+            ? '横帯がそのカードの意見の範囲 (最小〜最大)、色の濃い部分に意見が集中しています。太い縦線は中央値、ドットは一人ひとりの配置です。'
+            : '楕円が意見の散らばり、点が全体の中心 (重心) です。「まとめて / 1枚ずつ / 一覧」で表示を切り替えられます。',
+      },
+    },
+    {
+      element: '[data-tour="reveal-controls"]',
+      popover: {
+        title: '表示の切り替え',
+        description:
+          '並び順や表示モード、個人ドット、前ラウンドとの比較などをここで切り替えられます。',
+      },
+    },
+    {
+      element: '[data-tour="reveal-agreement"]',
+      popover: {
+        title: '議論ポイント',
+        description:
+          '意見が割れているカードほど上に表示されます。合意度が低いカードから話すのが効率的です。「自分のズレ」が大きいカードは、あなたの視点を共有するチャンス。',
+      },
+    },
+  ]
+  if (isCreator) {
+    steps.push({
+      element: '[data-tour="facilitator"]',
+      popover: {
+        title: 'ファシリテーター操作',
+        description:
+          '議論が進んだら「もう1ラウンド」で再入力して収束を確認するか、「合意フェーズへ」で全員での合意ボード作りに進みます。',
+      },
+    })
+  }
+  return steps
+}
 
 export function RevealTurn({
   session,
@@ -71,10 +122,20 @@ export function RevealTurn({
     [session.cards, hiddenCards],
   )
 
+  const isCreator = session.createdBy === uid
+  useTour('reveal', () => revealTourSteps(session.axisType, isCreator))
+
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
         <h2 className="font-display text-lg font-bold">全員の意見を開示</h2>
+        <button
+          type="button"
+          onClick={() => startTour('reveal', revealTourSteps(session.axisType, isCreator), true)}
+          className="rounded-md border border-ink/15 bg-white/70 px-2 py-0.5 text-[11px] font-medium text-ink-soft hover:border-ink/40"
+        >
+          ? 使い方
+        </button>
         <ConvergenceTrend trend={trend} />
       </div>
 
@@ -101,7 +162,7 @@ export function RevealTurn({
         </div>
       )}
 
-      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs" data-tour="reveal-controls">
         {rounds.length > 1 && (
           <Segmented
             size="sm"
@@ -193,7 +254,7 @@ export function RevealTurn({
       )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0">
+        <div className="min-w-0" data-tour="reveal-board">
           {session.axisType === '1d' ? (
             <Reveal1D
               stats={sortedStats}
@@ -231,7 +292,7 @@ export function RevealTurn({
             赤いドットはあなた自身の配置。
           </p>
         </div>
-        <div>
+        <div data-tour="reveal-agreement">
           <AgreementPanel stats={stats} myUid={uid} axisType={session.axisType} />
         </div>
       </div>
