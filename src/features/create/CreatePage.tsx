@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
-import { Button, Field, Input, Panel, Segmented, Spinner } from '../../components/ui'
+import { Button, Field, InfoTip, Input, Panel, Segmented, Spinner } from '../../components/ui'
 import { getTemplate } from '../../data/templates'
 import { createSession } from '../../lib/db'
 import { useAuthUid } from '../../lib/firebase'
@@ -87,7 +87,16 @@ export default function CreatePage() {
 
       <div className="mt-6 space-y-6">
         <Panel className="space-y-4 p-5">
-          <Field label="あなたの表示名" hint="参加者に表示される名前です">
+          <Field
+            label="あなたの表示名"
+            hint="参加者に表示される名前です"
+            tip={
+              <>
+                開示のときに「誰の意見か」を判別するための名前です。
+                ログインは不要で、この名前だけで参加者を区別します。ニックネームでOK。
+              </>
+            }
+          >
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -95,7 +104,17 @@ export default function CreatePage() {
               maxLength={20}
             />
           </Field>
-          <Field label="テーマ名">
+          <Field
+            label="テーマ名"
+            tip={
+              <>
+                みんなで合意したい議題です。
+                <span className="mt-1 block text-white/70">
+                  例:「次のオフサイトの行き先」「新機能の優先順位」「今夜の晩御飯」
+                </span>
+              </>
+            }
+          >
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -107,7 +126,20 @@ export default function CreatePage() {
 
         <Panel className="space-y-4 p-5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold tracking-wide text-ink-soft">軸</span>
+            <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
+              軸
+              <InfoTip align="left">
+                カードを並べる「ものさし」です。
+                <span className="mt-1 block text-white/70">
+                  1軸: 1つの基準で横一列に並べる (例: 優先度)
+                </span>
+                <AxisExample1D />
+                <span className="mt-2 block text-white/70">
+                  2軸: 2つの基準で平面に置く (例: 価値 × コスト)
+                </span>
+                <AxisExample2D />
+              </InfoTip>
+            </span>
             <Segmented
               options={[
                 { value: '1d' as const, label: '1軸' },
@@ -130,8 +162,15 @@ export default function CreatePage() {
 
         <Panel className="p-5">
           <div className="mb-3 flex items-center justify-between">
-            <span className="text-xs font-bold tracking-wide text-ink-soft">
+            <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
               カード ({validCards.length}枚)
+              <InfoTip align="left">
+                議論したい要素を1枚ずつカードにします。参加者はこのカードを軸の上に
+                ドラッグして自分の意見を表明します。
+                <span className="mt-1 block text-white/70">
+                  例: テーマ「引っ越し先の条件」なら「家賃」「駅からの距離」「治安」…
+                </span>
+              </InfoTip>
             </span>
             <Button
               variant="outline"
@@ -198,7 +237,14 @@ function AxisEditor({
 }) {
   return (
     <div className="rounded-lg border border-ink/10 bg-white/50 p-3">
-      <p className="mb-2 text-xs font-bold text-ink-soft">{title}</p>
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-ink-soft">
+        {title}
+        <InfoTip align="left">
+          「軸の名前」は基準そのもの、「小さい側 / 大きい側」は軸の両端に表示されるラベルです。
+          いま入力中の値だとこうなります:
+          <AxisPreview axis={axis} />
+        </InfoTip>
+      </p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <Field label="軸の名前">
           <Input
@@ -226,5 +272,76 @@ function AxisEditor({
         </Field>
       </div>
     </div>
+  )
+}
+
+/* ---- ツールチップ内のミニ図解 ---- */
+
+const EX_CHIP_COLORS = ['#2a78d6', '#eb6834', '#1baf7a']
+
+function ExampleChip({ x, y, color }: { x: number; y: number; color: string }) {
+  return (
+    <g>
+      <rect x={x} y={y} width={26} height={12} rx={3} fill="#ffffff" />
+      <rect x={x} y={y} width={3.5} height={12} rx={1.5} fill={color} />
+    </g>
+  )
+}
+
+/** 1軸の例: 横一列にカードを並べる */
+function AxisExample1D() {
+  return (
+    <svg viewBox="0 0 200 46" className="mt-1 block w-full rounded bg-white/10" aria-hidden>
+      <line x1={10} y1={32} x2={190} y2={32} stroke="#ffffff" strokeOpacity={0.5} strokeWidth={1.2} />
+      <ExampleChip x={26} y={12} color={EX_CHIP_COLORS[1]} />
+      <ExampleChip x={92} y={12} color={EX_CHIP_COLORS[2]} />
+      <ExampleChip x={152} y={12} color={EX_CHIP_COLORS[0]} />
+      <text x={10} y={42} fontSize={8} fill="#ffffff" fillOpacity={0.75}>
+        ← 低い
+      </text>
+      <text x={190} y={42} fontSize={8} fill="#ffffff" fillOpacity={0.75} textAnchor="end">
+        高い →
+      </text>
+    </svg>
+  )
+}
+
+/** 2軸の例: 平面にカードを置く */
+function AxisExample2D() {
+  return (
+    <svg viewBox="0 0 200 90" className="mt-1 block w-full rounded bg-white/10" aria-hidden>
+      <line x1={100} y1={6} x2={100} y2={78} stroke="#ffffff" strokeOpacity={0.4} strokeWidth={1} />
+      <line x1={14} y1={44} x2={186} y2={44} stroke="#ffffff" strokeOpacity={0.4} strokeWidth={1} />
+      <ExampleChip x={128} y={16} color={EX_CHIP_COLORS[0]} />
+      <ExampleChip x={44} y={30} color={EX_CHIP_COLORS[1]} />
+      <ExampleChip x={112} y={58} color={EX_CHIP_COLORS[2]} />
+      <text x={186} y={54} fontSize={8} fill="#ffffff" fillOpacity={0.75} textAnchor="end">
+        価値 →
+      </text>
+      <text x={104} y={14} fontSize={8} fill="#ffffff" fillOpacity={0.75}>
+        ↑ コスト
+      </text>
+    </svg>
+  )
+}
+
+/** 入力中の軸ラベルがどこに表示されるかのライブプレビュー */
+function AxisPreview({ axis }: { axis: AxisDef }) {
+  const min = axis.minLabel.trim() || '(小さい側)'
+  const max = axis.maxLabel.trim() || '(大きい側)'
+  const label = axis.label.trim() || '(軸の名前)'
+  return (
+    <svg viewBox="0 0 220 44" className="mt-1 block w-full rounded bg-white/10" aria-hidden>
+      <line x1={10} y1={22} x2={210} y2={22} stroke="#ffffff" strokeOpacity={0.5} strokeWidth={1.2} />
+      <text x={10} y={38} fontSize={9} fill="#ffffff" fillOpacity={0.85}>
+        ← {min}
+      </text>
+      <text x={210} y={38} fontSize={9} fill="#ffffff" fillOpacity={0.85} textAnchor="end">
+        {max} →
+      </text>
+      <text x={110} y={12} fontSize={9} fontWeight={700} fill="#ffffff" textAnchor="middle">
+        {label}
+      </text>
+    </svg>
   )
 }

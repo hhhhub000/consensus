@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import { useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react'
 
 type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost'
 type ButtonSize = 'sm' | 'md' | 'lg'
@@ -49,18 +49,87 @@ export function Input({
 export function Field({
   label,
   hint,
+  tip,
   children,
 }: {
   label: string
   hint?: string
+  /** ⓘ アイコンにフォーカス/ホバーで表示される説明 */
+  tip?: ReactNode
   children: ReactNode
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-bold tracking-wide text-ink-soft">{label}</span>
+      <span className="mb-1.5 flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
+        {label}
+        {tip && <InfoTip>{tip}</InfoTip>}
+      </span>
       {children}
       {hint && <span className="mt-1 block text-xs text-ink-faint">{hint}</span>}
     </label>
+  )
+}
+
+/**
+ * ホバー/フォーカスで吹き出しを出す汎用ラッパー。
+ * children をトリガーとして包む。トリガーがフォーカス可能でない場合は tabIndex を付与すること。
+ */
+export function Tip({
+  content,
+  children,
+  align = 'center',
+}: {
+  content: ReactNode
+  children: ReactNode
+  align?: 'center' | 'left' | 'right'
+}) {
+  const [open, setOpen] = useState(false)
+  const pos =
+    align === 'left'
+      ? 'left-0'
+      : align === 'right'
+        ? 'right-0'
+        : 'left-1/2 -translate-x-1/2'
+  return (
+    <span
+      className="relative inline-flex"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+    >
+      {children}
+      {open && (
+        <span
+          role="tooltip"
+          className={`tip-bubble pointer-events-none absolute top-full z-40 mt-1.5 w-max max-w-[min(18rem,80vw)] rounded-lg bg-ink p-3 text-left text-xs font-normal leading-5 text-white shadow-lift ${pos}`}
+        >
+          {content}
+        </span>
+      )}
+    </span>
+  )
+}
+
+/** ⓘ アイコン。フォーカス/ホバーで説明の吹き出しを表示 */
+export function InfoTip({
+  children,
+  align = 'center',
+}: {
+  children: ReactNode
+  align?: 'center' | 'left' | 'right'
+}) {
+  return (
+    <Tip content={children} align={align}>
+      <button
+        type="button"
+        aria-label="項目の説明"
+        onClick={(e) => e.preventDefault()}
+        className="flex size-4 items-center justify-center rounded-full border border-ink/30 font-mono text-[10px] font-bold text-ink-soft hover:border-ink/60 hover:text-ink"
+      >
+        i
+      </button>
+    </Tip>
   )
 }
 
