@@ -11,10 +11,14 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.phase == 'lobby';
-      // フェーズ遷移・開示・名前表示切替は作成者のみ。作成者の移譲は不可
-      allow update: if request.auth != null
-        && resource.data.createdBy == request.auth.uid
-        && request.resource.data.createdBy == resource.data.createdBy;
+      // フェーズ遷移・開示・名前表示切替は作成者のみ。作成者の移譲は不可。
+      // 参加者は入力フェーズ中に限り cards 配列のみ変更できる (カード追加用)
+      allow update: if request.auth != null && (
+        (resource.data.createdBy == request.auth.uid
+          && request.resource.data.createdBy == resource.data.createdBy)
+        || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['cards'])
+          && resource.data.phase == 'input')
+      );
 
       match /participants/{uid} {
         allow read: if request.auth != null;

@@ -1,10 +1,16 @@
 import type { DriveStep } from 'driver.js'
 import { useEffect, useMemo, useState } from 'react'
 import { NoteEditor } from '../../components/NoteEditor'
-import { Button, Spinner } from '../../components/ui'
-import { fetchPlacement, savePlacement, setReady, type PlacementData } from '../../lib/db'
+import { Button, Input, Panel, Spinner } from '../../components/ui'
+import {
+  addCardToSession,
+  fetchPlacement,
+  savePlacement,
+  setReady,
+  type PlacementData,
+} from '../../lib/db'
 import { isTourDone, startTour, useTour } from '../../lib/tour'
-import { debounce } from '../../lib/utils'
+import { colorAt, debounce, randomId } from '../../lib/utils'
 import type { Participant, Session } from '../../types'
 import { PlacementBoard } from '../board/PlacementBoard'
 
@@ -65,6 +71,7 @@ export function InputTurn({
 }) {
   const [data, setData] = useState<PlacementData | null>(null)
   const [noteCardId, setNoteCardId] = useState<string | null>(null)
+  const [addingCard, setAddingCard] = useState(false)
   const me = participants.find((p) => p.uid === uid)
   const isReady = (me?.readyRound ?? 0) >= session.round
 
@@ -176,6 +183,28 @@ export function InputTurn({
       />
       </div>
 
+      <div className="mt-3">
+        <Button variant="outline" size="sm" onClick={() => setAddingCard(true)}>
+          + カードを追加
+        </Button>
+        <span className="ml-2 text-xs text-ink-soft">
+          追加したカードは全員のカード置き場に即時反映されます
+        </span>
+      </div>
+
+      {addingCard && (
+        <AddCardDialog
+          onAdd={(label) => {
+            addCardToSession(session.id, {
+              id: randomId(8),
+              label,
+              color: colorAt(session.cards.length),
+            }).catch(console.error)
+          }}
+          onClose={() => setAddingCard(false)}
+        />
+      )}
+
       {noteCardId && (
         <NoteEditor
           cardLabel={session.cards.find((c) => c.id === noteCardId)?.label ?? ''}
@@ -197,6 +226,57 @@ export function InputTurn({
           onClose={() => setNoteCardId(null)}
         />
       )}
+    </div>
+  )
+}
+
+/** 議論中に気づいた要素をその場でカード化する小さなダイアログ */
+function AddCardDialog({
+  onAdd,
+  onClose,
+}: {
+  onAdd: (label: string) => void
+  onClose: () => void
+}) {
+  const [label, setLabel] = useState('')
+  const submit = () => {
+    if (!label.trim()) return
+    onAdd(label.trim())
+    onClose()
+  }
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-label="カードを追加"
+    >
+      <Panel className="animate-fade-up w-full max-w-sm p-5" onClick={(e) => e.stopPropagation()}>
+        <p className="font-display text-base font-bold">カードを追加</p>
+        <p className="mt-1 text-[13px] text-ink-soft">
+          追加したカードは、参加者全員のカード置き場にすぐ表示されます。
+        </p>
+        <Input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="例: 追加で議論したい要素"
+          maxLength={30}
+          autoFocus
+          className="mt-3"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') submit()
+            if (e.key === 'Escape') onClose()
+          }}
+        />
+        <div className="mt-3 flex justify-end gap-2">
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            キャンセル
+          </Button>
+          <Button variant="accent" size="sm" disabled={!label.trim()} onClick={submit}>
+            追加
+          </Button>
+        </div>
+      </Panel>
     </div>
   )
 }

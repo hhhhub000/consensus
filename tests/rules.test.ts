@@ -82,6 +82,27 @@ describe.skipIf(!emulatorUp)('firestore security rules', () => {
     )
   })
 
+  it('参加者は入力フェーズ中に cards 配列のみ更新できる', async () => {
+    const ref = doc(asUser('bob'), 'sessions', SID)
+    await assertSucceeds(
+      updateDoc(ref, {
+        cards: [
+          { id: 'c1', label: 'カード1', color: '#2a78d6' },
+          { id: 'c2', label: '追加カード', color: '#eb6834' },
+        ],
+      }),
+    )
+    // cards 以外を同時に触るのは不可
+    await assertFails(updateDoc(ref, { cards: [], title: '書き換え' }))
+    // 開示フェーズでは cards も不可
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await updateDoc(doc(ctx.firestore(), 'sessions', SID), { phase: 'reveal', revealedUpTo: 1 })
+    })
+    await assertFails(
+      updateDoc(ref, { cards: [{ id: 'c3', label: 'x', color: '#fff' }] }),
+    )
+  })
+
   it('入力フェーズ中は自分の placement を書ける', async () => {
     await assertSucceeds(
       setDoc(doc(asUser('bob'), 'sessions', SID, 'placements', '1_bob'), {

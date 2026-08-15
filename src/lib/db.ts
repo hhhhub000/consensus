@@ -1,4 +1,5 @@
 import {
+  arrayUnion,
   collection,
   deleteField,
   doc,
@@ -69,6 +70,11 @@ export async function joinSession(id: string, uid: string, name: string, color: 
 export interface PlacementData {
   positions: Record<string, Pos>
   notes: Record<string, string>
+}
+
+/** 入力フェーズ中のカード追加 (参加者なら誰でも可。全員にリアルタイム反映される) */
+export async function addCardToSession(id: string, card: CardDef) {
+  await updateDoc(sessionRef(id), { cards: arrayUnion(card) })
 }
 
 export async function savePlacement(
