@@ -64,7 +64,7 @@ export default function RoomsPage() {
     <div className="animate-fade-up mx-auto max-w-2xl px-4 pb-24 pt-6">
       <header className="mb-6 flex items-center justify-between">
         <Link to="/" className="font-display text-lg font-bold">
-          Consensus
+          ホンネセンサス
         </Link>
         <span className="text-sm text-ink-soft">過去のルーム</span>
       </header>

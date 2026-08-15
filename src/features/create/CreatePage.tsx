@@ -207,7 +207,7 @@ export default function CreatePage() {
     <div className="animate-fade-up mx-auto max-w-2xl px-4 pb-24 pt-6">
       <header className="mb-6 flex items-center justify-between">
         <Link to="/" className="font-display text-lg font-bold">
-          Consensus
+          ホンネセンサス
         </Link>
         <span className="flex items-center gap-3 text-xs text-ink-faint">
           テーマ作成

@@ -33,7 +33,7 @@ export function JoinGate({
 
   return (
     <div className="animate-fade-up mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
-      <p className="font-display text-sm font-bold text-ink-soft">Consensus</p>
+      <p className="font-display text-sm font-bold text-ink-soft">ホンネセンサス</p>
       <h1 className="mt-1 font-display text-2xl font-bold leading-snug">{session.title}</h1>
       <p className="mt-2 text-sm text-ink-soft">
         {session.axisType === '1d' ? '1軸' : '2軸'}ボード ・ カード{session.cards.length}枚 ・

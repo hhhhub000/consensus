@@ -31,7 +31,7 @@ export default function HomePage() {
   return (
     <div className="animate-fade-up min-h-dvh">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5">
-        <span className="font-display text-lg font-bold tracking-wide">Consensus</span>
+        <span className="font-display text-lg font-bold tracking-wide">ホンネセンサス</span>
         <Link
           to="/create"
           className="rounded-lg border border-ink/20 bg-white/70 px-4 py-2 text-sm font-medium hover:border-ink/40"
@@ -43,16 +43,20 @@ export default function HomePage() {
       <section className="graph-paper border-y border-grid-strong">
         <div className="mx-auto grid max-w-5xl gap-10 px-4 py-14 md:grid-cols-[1.2fr_1fr] md:items-center md:py-20">
           <div>
-            <h1 className="font-display text-4xl font-bold leading-snug tracking-wide md:text-5xl">
-              まず、ひとりで考える。
+            <h1 className="font-display text-3xl font-bold leading-snug tracking-wide md:text-[2.6rem] md:leading-snug">
+              空気を読む前の意見が、
               <br />
-              それから、開示する。
+              いちばん価値がある。
             </h1>
-            <p className="mt-6 max-w-xl text-[15px] leading-8 text-ink-soft md:text-base">
-              話し合いから始めると、意見は最初の発言に引っ張られます。Consensus
-              は「先に各自の考えを配置 →
-              一斉開示」の順番を強制することで、同調圧力のかかっていない生の意見分布から合意形成を始められるボードです。
-            </p>
+            <div className="mt-6 max-w-xl space-y-4 text-[15px] leading-8 text-ink-soft md:text-base">
+              <p>
+                会議で最初に誰かが発言すると、その後の意見はそこに引っ張られます。気づけば「本当はどう思っているか」が誰にもわからないまま、なんとなくの合意ができあがる——。
+              </p>
+              <p>
+                <span className="font-bold text-ink">ホンネセンサス</span>{' '}
+                は、話し合いの前に全員が自分の考えをカードで置き、それから一斉に開示するボードです。誰にも影響されていない生の意見と、そのズレがひと目で見えるから、「どこが揃っていて、どこが割れているか」から議論を始められます。合意までが速くなり、決まったことへの納得感が変わります。
+              </p>
+            </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#templates"
@@ -120,7 +124,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t border-grid-strong py-8 text-center text-xs text-ink-faint">
-        Consensus — 意見を並べて、合意をつくる
+        ホンネセンサス — 空気を読む前の意見が、いちばん価値がある。
       </footer>
     </div>
   )

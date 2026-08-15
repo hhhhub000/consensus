@@ -51,7 +51,7 @@ export function SessionHeader({ session }: { session: Session }) {
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <Link to="/" className="font-display text-base font-bold text-ink-soft hover:text-ink">
-        Consensus
+        ホンネセンサス
       </Link>
       <h1 className="min-w-0 flex-1 truncate font-display text-lg font-bold md:text-xl">
         {session.title}
