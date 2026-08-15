@@ -310,6 +310,28 @@ function ChipBody({
   )
 }
 
+/** 横向きの両矢印軸 ←──→ (どちらが大きいかを暗示しない中立表現) */
+export function HArrow({ className = '' }: { className?: string }) {
+  return (
+    <span className={`flex items-center text-ink-soft ${className}`} aria-hidden>
+      <span className="text-[13px] leading-none">←</span>
+      <span className="mx-0.5 h-px flex-1 bg-ink/40" />
+      <span className="text-[13px] leading-none">→</span>
+    </span>
+  )
+}
+
+/** 縦向きの両矢印軸 */
+function VArrow({ className = '' }: { className?: string }) {
+  return (
+    <span className={`flex w-3 flex-col items-center text-ink-soft ${className}`} aria-hidden>
+      <span className="text-[13px] leading-none">↑</span>
+      <span className="my-0.5 w-px flex-1 bg-ink/40" />
+      <span className="text-[13px] leading-none">↓</span>
+    </span>
+  )
+}
+
 export function AxisFrame({
   axisType,
   axes,
@@ -366,19 +388,12 @@ export function AxisFrame({
           {/* X軸 (ラベルが設定されているときのみ。4象限ではラベル無しも可) */}
           {(axes.x.minLabel || axes.x.maxLabel || axes.x.label) && (
             <>
-              <svg
-                className="absolute inset-x-6 bottom-0.5 h-4 w-[calc(100%-3rem)]"
-                preserveAspectRatio="none"
-                viewBox="0 0 100 16"
-                aria-hidden
-              >
-                <polygon points="0,14 100,14 100,2" fill="#21313a" opacity="0.09" />
-              </svg>
+              <HArrow className="absolute inset-x-6 bottom-2" />
               <span className="absolute bottom-1 left-6 max-w-[35%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
-                ← {axes.x.minLabel}
+                {axes.x.minLabel}
               </span>
-              <span className="absolute bottom-1 right-2 max-w-[38%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-right text-[13px] font-bold text-ink">
-                {axes.x.maxLabel} →
+              <span className="absolute bottom-1 right-2 max-w-[38%] truncate rounded-sm bg-white/85 px-1.5 py-0.5 text-right">
+                {axes.x.maxLabel}
               </span>
               <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-sm bg-white/90 px-2 py-0.5 font-bold text-ink">
                 {axes.x.label}
@@ -388,19 +403,12 @@ export function AxisFrame({
           {/* Y軸 */}
           {(axes.y?.minLabel || axes.y?.maxLabel || axes.y?.label) && (
             <>
-              <svg
-                className="absolute bottom-6 left-0.5 top-6 h-[calc(100%-3rem)] w-4"
-                preserveAspectRatio="none"
-                viewBox="0 0 16 100"
-                aria-hidden
-              >
-                <polygon points="2,0 14,0 2,100" fill="#21313a" opacity="0.09" />
-              </svg>
-              <span className="absolute left-1 top-1 max-w-[45%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-[13px] font-bold text-ink">
-                ↑ {axes.y?.maxLabel}
+              <VArrow className="absolute bottom-8 left-2 top-8" />
+              <span className="absolute left-1 top-1 max-w-[45%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
+                {axes.y?.maxLabel}
               </span>
               <span className="absolute bottom-7 left-1 max-w-[40%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
-                ↓ {axes.y?.minLabel}
+                {axes.y?.minLabel}
               </span>
               <span className="absolute left-1 top-1/2 -translate-y-1/2 rounded-sm bg-white/90 px-1 py-1.5 font-bold text-ink [writing-mode:vertical-rl]">
                 {axes.y?.label}
@@ -410,21 +418,12 @@ export function AxisFrame({
         </>
       ) : (
         <>
-          {/* 右に行くほど「大きい」を示すくさび形 */}
-          <svg
-            className="absolute inset-x-3 bottom-9 h-5 w-[calc(100%-1.5rem)]"
-            preserveAspectRatio="none"
-            viewBox="0 0 100 20"
-            aria-hidden
-          >
-            <polygon points="0,18 100,18 100,2" fill="#21313a" opacity="0.09" />
-            <line x1="0" y1="19" x2="100" y2="19" stroke="#c9d3d0" strokeWidth="1.5" />
-          </svg>
-          <span className="absolute bottom-2.5 left-3 rounded-sm bg-white/80 px-1.5 py-0.5">
-            ← {axes.x.minLabel}
+          <HArrow className="absolute inset-x-3 bottom-9" />
+          <span className="absolute bottom-2.5 left-3 rounded-sm bg-white/85 px-1.5 py-0.5">
+            {axes.x.minLabel}
           </span>
-          <span className="absolute bottom-2.5 right-3 rounded-sm bg-white/85 px-1.5 py-0.5 text-[13px] font-bold text-ink">
-            {axes.x.maxLabel} →
+          <span className="absolute bottom-2.5 right-3 rounded-sm bg-white/85 px-1.5 py-0.5">
+            {axes.x.maxLabel}
           </span>
           <span className="absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-sm bg-white/85 px-2 py-0.5 font-bold text-ink">
             {axes.x.label}

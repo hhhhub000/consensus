@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { CardStat } from '../../lib/derive'
 import { hashString } from '../../lib/utils'
 import type { Participant } from '../../types'
+import { HArrow } from '../board/PlacementBoard'
 import { DotTipOverlay, type DotTipState } from './DotTip'
 
 const ROW_H = 48
@@ -56,14 +57,11 @@ export function Reveal1D({
       <div className="grid grid-cols-[7rem_1fr] items-end gap-2 border-b border-ink/10 px-3 pb-1.5 pt-2 sm:grid-cols-[9rem_1fr]">
         <span className="text-[11px] font-bold text-ink-faint">カード</span>
         <div>
-          <svg className="block h-3.5 w-full" preserveAspectRatio="none" viewBox="0 0 100 14" aria-hidden>
-            <polygon points="0,12 100,12 100,1" fill="#21313a" opacity="0.09" />
-            <line x1="0" y1="13" x2="100" y2="13" stroke="#c9d3d0" strokeWidth="1.5" />
-          </svg>
+          <HArrow className="w-full" />
           <div className="flex items-baseline justify-between text-xs text-ink-soft">
-            <span>← {axisMinLabel}</span>
+            <span>{axisMinLabel}</span>
             <span className="font-bold text-ink">{axisLabel}</span>
-            <span className="text-[13px] font-bold text-ink">{axisMaxLabel} →</span>
+            <span>{axisMaxLabel}</span>
           </div>
         </div>
       </div>
