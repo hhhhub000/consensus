@@ -151,6 +151,7 @@ export function InputTurn({
       <PlacementBoard
         axisType={session.axisType}
         axes={session.axes}
+        quadrants={session.quadrants}
         cards={session.cards}
         positions={data.positions}
         hasNote={(cardId) => !!data.notes[cardId]}

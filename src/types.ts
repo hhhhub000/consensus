@@ -15,11 +15,21 @@ export interface CardDef {
 
 export type Phase = 'lobby' | 'input' | 'reveal' | 'consensus' | 'closed'
 
+/** 4象限ボードの各区画ラベル (tl=左上, tr=右上, bl=左下, br=右下) */
+export interface Quadrants {
+  tl: string
+  tr: string
+  bl: string
+  br: string
+}
+
 export interface Session {
   id: string
   title: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  /** 設定されている場合、2次元ボードを「4象限」として表示する */
+  quadrants?: Quadrants
   cards: CardDef[]
   createdBy: string
   phase: Phase

@@ -1,10 +1,11 @@
 import { useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { clamp01 } from '../../lib/utils'
-import type { AxisDef, AxisType, CardDef, Pos } from '../../types'
+import type { AxisDef, AxisType, CardDef, Pos, Quadrants } from '../../types'
 
 export interface PlacementBoardProps {
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
   cards: CardDef[]
   positions: Record<string, Pos>
   disabled?: boolean
@@ -39,6 +40,7 @@ interface DragState {
 export function PlacementBoard({
   axisType,
   axes,
+  quadrants,
   cards,
   positions,
   disabled,
@@ -136,7 +138,7 @@ export function PlacementBoard({
         ref={boardRef}
         className={`graph-paper relative w-full overflow-hidden rounded-xl border border-ink/15 shadow-card ${boardHeight}`}
       >
-        <AxisFrame axisType={axisType} axes={axes} />
+        <AxisFrame axisType={axisType} axes={axes} quadrants={quadrants} />
         {overlay && (
           <div className="pointer-events-none absolute inset-0">{overlay}</div>
         )}
@@ -305,9 +307,11 @@ function ChipBody({
 export function AxisFrame({
   axisType,
   axes,
+  quadrants,
 }: {
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
 }) {
   return (
     <div className="pointer-events-none absolute inset-0 select-none text-xs text-ink-soft">
@@ -315,44 +319,70 @@ export function AxisFrame({
         <>
           <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-grid-strong" />
           <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-grid-strong" />
-          {/* X軸: 右に行くほど「大きい」くさび */}
-          <svg
-            className="absolute inset-x-6 bottom-0.5 h-4 w-[calc(100%-3rem)]"
-            preserveAspectRatio="none"
-            viewBox="0 0 100 16"
-            aria-hidden
-          >
-            <polygon points="0,14 100,14 100,2" fill="#21313a" opacity="0.09" />
-          </svg>
-          {/* Y軸: 上に行くほど「大きい」くさび */}
-          <svg
-            className="absolute bottom-6 left-0.5 top-6 h-[calc(100%-3rem)] w-4"
-            preserveAspectRatio="none"
-            viewBox="0 0 16 100"
-            aria-hidden
-          >
-            <polygon points="2,0 14,0 2,100" fill="#21313a" opacity="0.09" />
-          </svg>
-          {/* X軸ラベル */}
-          <span className="absolute bottom-1 left-6 max-w-[35%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
-            ← {axes.x.minLabel}
-          </span>
-          <span className="absolute bottom-1 right-2 max-w-[38%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-right text-[13px] font-bold text-ink">
-            {axes.x.maxLabel} →
-          </span>
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-sm bg-white/90 px-2 py-0.5 font-bold text-ink">
-            {axes.x.label}
-          </span>
-          {/* Y軸ラベル */}
-          <span className="absolute left-1 top-1 max-w-[45%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-[13px] font-bold text-ink">
-            ↑ {axes.y?.maxLabel}
-          </span>
-          <span className="absolute bottom-7 left-1 max-w-[40%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
-            ↓ {axes.y?.minLabel}
-          </span>
-          <span className="absolute left-1 top-1/2 -translate-y-1/2 rounded-sm bg-white/90 px-1 py-1.5 font-bold text-ink [writing-mode:vertical-rl]">
-            {axes.y?.label}
-          </span>
+          {/* 4象限ラベル (各区画の中央に薄く表示) */}
+          {quadrants &&
+            (
+              [
+                ['tl', '25%', '25%'],
+                ['tr', '75%', '25%'],
+                ['bl', '25%', '75%'],
+                ['br', '75%', '75%'],
+              ] as const
+            ).map(([key, left, top]) =>
+              quadrants[key] ? (
+                <span
+                  key={key}
+                  className="absolute max-w-[45%] -translate-x-1/2 -translate-y-1/2 text-center font-display text-base font-bold leading-6 text-ink/25 md:text-xl"
+                  style={{ left, top }}
+                >
+                  {quadrants[key]}
+                </span>
+              ) : null,
+            )}
+          {/* X軸 (ラベルが設定されているときのみ。4象限ではラベル無しも可) */}
+          {(axes.x.minLabel || axes.x.maxLabel || axes.x.label) && (
+            <>
+              <svg
+                className="absolute inset-x-6 bottom-0.5 h-4 w-[calc(100%-3rem)]"
+                preserveAspectRatio="none"
+                viewBox="0 0 100 16"
+                aria-hidden
+              >
+                <polygon points="0,14 100,14 100,2" fill="#21313a" opacity="0.09" />
+              </svg>
+              <span className="absolute bottom-1 left-6 max-w-[35%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
+                ← {axes.x.minLabel}
+              </span>
+              <span className="absolute bottom-1 right-2 max-w-[38%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-right text-[13px] font-bold text-ink">
+                {axes.x.maxLabel} →
+              </span>
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 rounded-sm bg-white/90 px-2 py-0.5 font-bold text-ink">
+                {axes.x.label}
+              </span>
+            </>
+          )}
+          {/* Y軸 */}
+          {(axes.y?.minLabel || axes.y?.maxLabel || axes.y?.label) && (
+            <>
+              <svg
+                className="absolute bottom-6 left-0.5 top-6 h-[calc(100%-3rem)] w-4"
+                preserveAspectRatio="none"
+                viewBox="0 0 16 100"
+                aria-hidden
+              >
+                <polygon points="2,0 14,0 2,100" fill="#21313a" opacity="0.09" />
+              </svg>
+              <span className="absolute left-1 top-1 max-w-[45%] truncate rounded-sm bg-white/90 px-1.5 py-0.5 text-[13px] font-bold text-ink">
+                ↑ {axes.y?.maxLabel}
+              </span>
+              <span className="absolute bottom-7 left-1 max-w-[40%] truncate rounded-sm bg-white/85 px-1.5 py-0.5">
+                ↓ {axes.y?.minLabel}
+              </span>
+              <span className="absolute left-1 top-1/2 -translate-y-1/2 rounded-sm bg-white/90 px-1 py-1.5 font-bold text-ink [writing-mode:vertical-rl]">
+                {axes.y?.label}
+              </span>
+            </>
+          )}
         </>
       ) : (
         <>

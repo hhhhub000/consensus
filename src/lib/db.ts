@@ -7,7 +7,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore'
-import type { AxisDef, AxisType, CardDef, Pos } from '../types'
+import type { AxisDef, AxisType, CardDef, Pos, Quadrants } from '../types'
 import { db } from './firebase'
 import { randomId } from './utils'
 
@@ -24,6 +24,7 @@ export interface CreateSessionInput {
   title: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
   cards: CardDef[]
   templateId?: string
 }
@@ -43,6 +44,7 @@ export async function createSession(
     title: input.title,
     axisType: input.axisType,
     axes,
+    quadrants: input.quadrants ?? null,
     cards: input.cards,
     templateId: input.templateId ?? null,
     createdBy: uid,

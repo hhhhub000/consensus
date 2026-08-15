@@ -1,4 +1,4 @@
-import type { AxisDef, AxisType } from '../types'
+import type { AxisDef, AxisType, Quadrants } from '../types'
 import { randomId } from './utils'
 
 /**
@@ -13,6 +13,7 @@ export interface MyTemplate {
   title: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
   cards: { label: string }[]
   savedAt: number
 }

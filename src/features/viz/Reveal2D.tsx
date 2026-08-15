@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { CardStat } from '../../lib/derive'
-import type { AxisDef, Participant } from '../../types'
+import type { AxisDef, Participant, Quadrants } from '../../types'
 import { AxisFrame } from '../board/PlacementBoard'
 import { DotTipOverlay, type DotTipState } from './DotTip'
 import { AgreementChip } from './Reveal1D'
@@ -14,6 +14,7 @@ interface Props {
   myUid: string
   showNames: boolean
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
   mode: Mode2D
   selectedCardId: string | null
   onSelectCard: (id: string) => void
@@ -27,6 +28,7 @@ export function Reveal2D({
   myUid,
   showNames,
   axes,
+  quadrants,
   mode,
   selectedCardId,
   onSelectCard,
@@ -105,7 +107,7 @@ export function Reveal2D({
       )}
 
       <div className="graph-paper relative mx-auto aspect-square w-full max-w-[560px] overflow-hidden rounded-xl border border-ink/15 shadow-card">
-        <AxisFrame axisType="2d" axes={axes} />
+        <AxisFrame axisType="2d" axes={axes} quadrants={quadrants} />
         <svg viewBox="0 0 100 100" className="absolute inset-0 size-full" role="img">
           <defs>
             <marker

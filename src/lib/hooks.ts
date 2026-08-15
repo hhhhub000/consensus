@@ -37,6 +37,7 @@ export function useSession(id: string | undefined): Loadable<Session> {
             title: d.title,
             axisType: d.axisType,
             axes: d.axes,
+            quadrants: d.quadrants ?? undefined,
             cards: d.cards,
             createdBy: d.createdBy,
             phase: d.phase,

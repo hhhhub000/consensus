@@ -277,6 +277,7 @@ export function RevealTurn({
               myUid={uid}
               showNames={session.showNames}
               axes={session.axes}
+              quadrants={session.quadrants}
               mode={mode}
               selectedCardId={selectedCardId}
               onSelectCard={(id) => {

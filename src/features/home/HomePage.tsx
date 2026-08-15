@@ -201,15 +201,18 @@ function MyTemplatesSection() {
               <div className="flex items-start justify-between pr-8">
                 <span className="text-3xl">📌</span>
                 <Badge>
-                  {t.axisType === '1d' ? '1軸' : '2軸'} ・ {t.cards.length}枚
+                  {t.quadrants ? '4象限' : t.axisType === '1d' ? '1次元' : '2次元'} ・{' '}
+                  {t.cards.length}枚
                 </Badge>
               </div>
               <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
                 {t.title}
               </h3>
               <p className="mt-1 text-[13px] leading-6 text-ink-soft">
-                {new Date(t.savedAt).toLocaleDateString('ja-JP')} 保存 ・ 軸: {t.axes.x.label}
-                {t.axes.y ? ` × ${t.axes.y.label}` : ''}
+                {new Date(t.savedAt).toLocaleDateString('ja-JP')} 保存 ・{' '}
+                {t.quadrants
+                  ? `${t.quadrants.tl} / ${t.quadrants.tr} / ${t.quadrants.bl} / ${t.quadrants.br}`
+                  : `軸: ${t.axes.x.label}${t.axes.y ? ` × ${t.axes.y.label}` : ''}`}
               </p>
             </Link>
             <button

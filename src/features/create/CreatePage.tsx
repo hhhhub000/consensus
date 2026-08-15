@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import type { DriveStep } from 'driver.js'
-import { Button, Field, InfoTip, Input, Panel, Segmented, Spinner } from '../../components/ui'
+import { Button, Field, InfoTip, Input, Panel, Spinner } from '../../components/ui'
 import { getTemplate } from '../../data/templates'
 import { getMyTemplate, saveMyTemplate } from '../../lib/templateStore'
 import { createSession } from '../../lib/db'
 import { useAuthUid } from '../../lib/firebase'
 import { startTour, useTour } from '../../lib/tour'
 import { colorAt, hashString, randomId } from '../../lib/utils'
-import type { AxisDef, AxisType } from '../../types'
+import type { AxisDef, AxisType, Quadrants } from '../../types'
 
 interface CardDraft {
   key: string
@@ -17,6 +17,11 @@ interface CardDraft {
 
 const DEFAULT_X: AxisDef = { label: '優先度', minLabel: '低い', maxLabel: '高い' }
 const DEFAULT_Y: AxisDef = { label: '', minLabel: '低い', maxLabel: '高い' }
+const EMPTY_AXIS: AxisDef = { label: '', minLabel: '', maxLabel: '' }
+const EMPTY_QUAD: Quadrants = { tl: '', tr: '', bl: '', br: '' }
+
+/** UI上のボードタイプ。4象限はデータ上は 2d + quadrants */
+type BoardKind = '1d' | '2d' | 'quad'
 
 const CREATE_TOUR: DriveStep[] = [
   {
@@ -37,9 +42,9 @@ const CREATE_TOUR: DriveStep[] = [
   {
     element: '[data-tour="create-axis"]',
     popover: {
-      title: '軸 = カードを並べるものさし',
+      title: 'タイプ = ボードの形',
       description:
-        '1軸なら「優先度が高い⇔低い」のような一直線、2軸なら「価値×コスト」のような平面にカードを置きます。両端のラベルも自由に変えられます。',
+        '1次元軸は「優先度が高い⇔低い」の一直線、2次元軸は「価値×コスト」のような平面、4象限はSWOT分析のように4つの区画へ仕分けるボードです。',
     },
   },
   {
@@ -65,6 +70,7 @@ interface Preset {
   title: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
   cards: { label: string }[]
   templateId?: string
 }
@@ -92,6 +98,7 @@ export default function CreatePage() {
         title: mine.title,
         axisType: mine.axisType,
         axes: mine.axes,
+        quadrants: mine.quadrants,
         cards: mine.cards,
       }
     }
@@ -102,9 +109,16 @@ export default function CreatePage() {
 
   const [name, setName] = useState(() => localStorage.getItem('consensus:name') ?? '')
   const [title, setTitle] = useState(preset?.title ?? '')
-  const [axisType, setAxisType] = useState<AxisType>(preset?.axisType ?? '1d')
-  const [axisX, setAxisX] = useState<AxisDef>(preset?.axes.x ?? DEFAULT_X)
-  const [axisY, setAxisY] = useState<AxisDef>(preset?.axes.y ?? DEFAULT_Y)
+  const [boardKind, setBoardKind] = useState<BoardKind>(
+    preset ? (preset.quadrants ? 'quad' : preset.axisType) : '1d',
+  )
+  const [axisX, setAxisX] = useState<AxisDef>(
+    preset?.axes.x && preset.axes.x.minLabel ? preset.axes.x : DEFAULT_X,
+  )
+  const [axisY, setAxisY] = useState<AxisDef>(
+    preset?.axes.y && preset.axes.y.minLabel ? preset.axes.y : DEFAULT_Y,
+  )
+  const [quadrants, setQuadrants] = useState<Quadrants>(preset?.quadrants ?? EMPTY_QUAD)
   const [cards, setCards] = useState<CardDraft[]>(() =>
     (preset?.cards ?? [{ label: '' }, { label: '' }, { label: '' }]).map((c) => ({
       key: randomId(6),
@@ -120,16 +134,39 @@ export default function CreatePage() {
   if (!uid) return <Spinner label="接続中..." />
 
   const validCards = cards.filter((c) => c.label.trim())
+  const quadComplete = [quadrants.tl, quadrants.tr, quadrants.bl, quadrants.br].every((v) =>
+    v.trim(),
+  )
+  const boardOk = boardKind === 'quad' ? quadComplete : Boolean(axisX.minLabel.trim())
   const canSubmit =
-    !submitting && name.trim() && title.trim() && validCards.length >= 2 && axisX.minLabel.trim()
-  const canSave = Boolean(title.trim()) && validCards.length >= 2
+    !submitting && name.trim() && title.trim() && validCards.length >= 2 && boardOk
+  const canSave = Boolean(title.trim()) && validCards.length >= 2 && boardOk
+
+  // BoardKind をデータモデル (axisType + quadrants) に変換
+  const boardConfig = () => ({
+    axisType: (boardKind === '1d' ? '1d' : '2d') as AxisType,
+    axes:
+      boardKind === '2d'
+        ? { x: axisX, y: axisY }
+        : boardKind === 'quad'
+          ? { x: EMPTY_AXIS, y: EMPTY_AXIS }
+          : { x: axisX },
+    quadrants:
+      boardKind === 'quad'
+        ? {
+            tl: quadrants.tl.trim(),
+            tr: quadrants.tr.trim(),
+            bl: quadrants.bl.trim(),
+            br: quadrants.br.trim(),
+          }
+        : undefined,
+  })
 
   const saveAsMyTemplate = () => {
     if (!canSave) return
     saveMyTemplate({
       title: title.trim(),
-      axisType,
-      axes: axisType === '2d' ? { x: axisX, y: axisY } : { x: axisX },
+      ...boardConfig(),
       cards: validCards.map((c) => ({ label: c.label.trim() })),
     })
     setSavedMsg(true)
@@ -145,8 +182,7 @@ export default function CreatePage() {
       const id = await createSession(
         {
           title: title.trim(),
-          axisType,
-          axes: axisType === '2d' ? { x: axisX, y: axisY } : { x: axisX },
+          ...boardConfig(),
           cards: validCards.map((c, i) => ({
             id: randomId(8),
             label: c.label.trim(),
@@ -227,38 +263,54 @@ export default function CreatePage() {
         </Panel>
 
         <Panel className="space-y-4 p-5" data-tour="create-axis">
-          <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
-              軸
-              <InfoTip align="left">
-                カードを並べる「ものさし」です。
-                <span className="mt-1 block text-white/70">
-                  1軸: 1つの基準で横一列に並べる (例: 優先度)
-                </span>
-                <AxisExample1D />
-                <span className="mt-2 block text-white/70">
-                  2軸: 2つの基準で平面に置く (例: 価値 × コスト)
-                </span>
-                <AxisExample2D />
-              </InfoTip>
-            </span>
-            <Segmented
-              options={[
-                { value: '1d' as const, label: '1軸' },
-                { value: '2d' as const, label: '2軸' },
-              ]}
-              value={axisType}
-              onChange={setAxisType}
-              size="sm"
-            />
+          <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
+            タイプ
+            <InfoTip align="left">
+              カードをどんなボードに置くかを選びます。
+              <span className="mt-1 block text-white/70">1次元軸: 1つの基準で並べる (例: 優先度)</span>
+              <AxisExample1D />
+              <span className="mt-2 block text-white/70">2次元軸: 2つの基準の平面 (例: 価値 × コスト)</span>
+              <AxisExample2D />
+              <span className="mt-2 block text-white/70">4象限: 4つの区画に仕分け (例: SWOT分析)</span>
+            </InfoTip>
+          </span>
+
+          <div className="grid grid-cols-3 gap-2">
+            {(
+              [
+                { kind: '1d', name: '1次元軸', desc: '1つの基準で並べる', icon: <TypeIcon1D /> },
+                { kind: '2d', name: '2次元軸', desc: '2つの基準の平面', icon: <TypeIcon2D /> },
+                { kind: 'quad', name: '4象限', desc: 'SWOTなど4区画に仕分け', icon: <TypeIconQuad /> },
+              ] as const
+            ).map((k) => (
+              <button
+                key={k.kind}
+                type="button"
+                onClick={() => setBoardKind(k.kind)}
+                aria-pressed={boardKind === k.kind}
+                className={`rounded-lg border p-2 text-left transition-colors ${
+                  boardKind === k.kind
+                    ? 'border-accent bg-white ring-1 ring-accent'
+                    : 'border-ink/15 bg-white/60 hover:border-ink/40'
+                }`}
+              >
+                {k.icon}
+                <span className="mt-1.5 block text-[13px] font-bold">{k.name}</span>
+                <span className="block text-[11px] leading-4 text-ink-soft">{k.desc}</span>
+              </button>
+            ))}
           </div>
-          <AxisEditor
-            title={axisType === '2d' ? '横軸 (X)' : '軸'}
-            axis={axisX}
-            onChange={setAxisX}
-          />
-          {axisType === '2d' && (
-            <AxisEditor title="縦軸 (Y)" axis={axisY} onChange={setAxisY} />
+
+          {boardKind !== 'quad' && (
+            <AxisEditor
+              title={boardKind === '2d' ? '横軸 (X)' : '軸'}
+              axis={axisX}
+              onChange={setAxisX}
+            />
+          )}
+          {boardKind === '2d' && <AxisEditor title="縦軸 (Y)" axis={axisY} onChange={setAxisY} />}
+          {boardKind === 'quad' && (
+            <QuadrantEditor value={quadrants} onChange={setQuadrants} />
           )}
         </Panel>
 
@@ -392,6 +444,92 @@ function AxisEditor({
         </Field>
       </div>
     </div>
+  )
+}
+
+/** 4象限のラベル編集 (2×2 のボードと同じ配置で入力) */
+function QuadrantEditor({
+  value,
+  onChange,
+}: {
+  value: Quadrants
+  onChange: (q: Quadrants) => void
+}) {
+  const fields = [
+    { key: 'tl', label: '左上', placeholder: '例: 強み' },
+    { key: 'tr', label: '右上', placeholder: '例: 弱み' },
+    { key: 'bl', label: '左下', placeholder: '例: 機会' },
+    { key: 'br', label: '右下', placeholder: '例: 脅威' },
+  ] as const
+  return (
+    <div className="rounded-lg border border-ink/10 bg-white/50 p-3">
+      <p className="mb-2 text-xs font-bold text-ink-soft">象限の名前 (ボードの4区画に表示)</p>
+      <div className="relative grid grid-cols-2 gap-2">
+        {/* 十字のガイド線 */}
+        <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-grid-strong" aria-hidden />
+        <div className="pointer-events-none absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-grid-strong" aria-hidden />
+        {fields.map((f) => (
+          <Field key={f.key} label={f.label}>
+            <Input
+              value={value[f.key]}
+              onChange={(e) => onChange({ ...value, [f.key]: e.target.value })}
+              placeholder={f.placeholder}
+              maxLength={20}
+            />
+          </Field>
+        ))}
+      </div>
+      <p className="mt-2 text-[13px] text-ink-soft">
+        4つすべて入力してください。軸のラベルは不要です — 象限の名前だけで伝わります。
+      </p>
+    </div>
+  )
+}
+
+/* ---- タイプ選択ボタンのイメージ図 ---- */
+
+function TypeIcon1D() {
+  return (
+    <svg viewBox="0 0 96 52" className="block w-full rounded-md bg-paper" aria-hidden>
+      <line x1={8} y1={38} x2={88} y2={38} stroke="#c9d3d0" strokeWidth={2} />
+      <polygon points="8,38 88,38 88,30" fill="#21313a" opacity="0.08" />
+      <rect x={12} y={16} width={20} height={10} rx={3} fill="#fff" stroke="#dde4e2" />
+      <rect x={12} y={16} width={3} height={10} rx={1.5} fill="#eb6834" />
+      <rect x={42} y={16} width={20} height={10} rx={3} fill="#fff" stroke="#dde4e2" />
+      <rect x={42} y={16} width={3} height={10} rx={1.5} fill="#1baf7a" />
+      <rect x={68} y={16} width={20} height={10} rx={3} fill="#fff" stroke="#dde4e2" />
+      <rect x={68} y={16} width={3} height={10} rx={1.5} fill="#2a78d6" />
+    </svg>
+  )
+}
+
+function TypeIcon2D() {
+  return (
+    <svg viewBox="0 0 96 52" className="block w-full rounded-md bg-paper" aria-hidden>
+      <line x1={48} y1={4} x2={48} y2={48} stroke="#c9d3d0" strokeWidth={1.5} />
+      <line x1={6} y1={26} x2={90} y2={26} stroke="#c9d3d0" strokeWidth={1.5} />
+      <rect x={58} y={8} width={20} height={10} rx={3} fill="#fff" stroke="#dde4e2" />
+      <rect x={58} y={8} width={3} height={10} rx={1.5} fill="#2a78d6" />
+      <rect x={16} y={20} width={20} height={10} rx={3} fill="#fff" stroke="#dde4e2" />
+      <rect x={16} y={20} width={3} height={10} rx={1.5} fill="#eb6834" />
+      <rect x={52} y={34} width={20} height={10} rx={3} fill="#fff" stroke="#dde4e2" />
+      <rect x={52} y={34} width={3} height={10} rx={1.5} fill="#1baf7a" />
+    </svg>
+  )
+}
+
+function TypeIconQuad() {
+  return (
+    <svg viewBox="0 0 96 52" className="block w-full rounded-md bg-paper" aria-hidden>
+      <rect x={4} y={3} width={43} height={22} rx={2} fill="#2a78d6" opacity="0.12" />
+      <rect x={49} y={3} width={43} height={22} rx={2} fill="#eb6834" opacity="0.12" />
+      <rect x={4} y={27} width={43} height={22} rx={2} fill="#1baf7a" opacity="0.12" />
+      <rect x={49} y={27} width={43} height={22} rx={2} fill="#eda100" opacity="0.12" />
+      <line x1={48} y1={2} x2={48} y2={50} stroke="#c9d3d0" strokeWidth={1.5} />
+      <line x1={3} y1={26} x2={93} y2={26} stroke="#c9d3d0" strokeWidth={1.5} />
+      <rect x={14} y={9} width={16} height={8} rx={2.5} fill="#fff" stroke="#dde4e2" />
+      <rect x={62} y={31} width={16} height={8} rx={2.5} fill="#fff" stroke="#dde4e2" />
+    </svg>
   )
 }
 

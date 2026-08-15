@@ -56,6 +56,7 @@ export function ConsensusTurn({
       <PlacementBoard
         axisType={session.axisType}
         axes={session.axes}
+        quadrants={session.quadrants}
         cards={session.cards}
         positions={board?.positions ?? {}}
         onMove={(cardId, pos) => {
