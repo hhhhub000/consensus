@@ -189,18 +189,20 @@ function CardCloud({
   return (
     <g>
       {e && (
-        <ellipse
-          cx={e.cx * 100}
-          cy={e.cy * 100}
-          rx={e.rx * 100}
-          ry={e.ry * 100}
-          transform={`rotate(${e.angle} ${e.cx * 100} ${e.cy * 100})`}
-          fill={color}
-          opacity={0.13}
-          stroke={color}
-          strokeOpacity={0.55}
-          strokeWidth={mini ? 0.8 : 0.5}
-        />
+        <g className="reveal-ellipse">
+          <ellipse
+            cx={e.cx * 100}
+            cy={e.cy * 100}
+            rx={e.rx * 100}
+            ry={e.ry * 100}
+            transform={`rotate(${e.angle} ${e.cx * 100} ${e.cy * 100})`}
+            fill={color}
+            opacity={0.13}
+            stroke={color}
+            strokeOpacity={0.55}
+            strokeWidth={mini ? 0.8 : 0.5}
+          />
+        </g>
       )}
       {/* 前ラウンド重心 → 今回重心の収束矢印 */}
       {prev?.centroidPos && (
@@ -226,17 +228,18 @@ function CardCloud({
         </>
       )}
       {/* 重心は個人ドットより背面に描く (重なってもドットにフォーカスできるように) */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={mini ? 2.2 : 1.8}
-        fill={color}
-        stroke="#ffffff"
-        strokeWidth={0.6}
-        pointerEvents="none"
-      />
+      <g className="reveal-dot" style={{ animationDelay: '250ms' }} pointerEvents="none">
+        <circle
+          cx={cx}
+          cy={cy}
+          r={mini ? 2.2 : 1.8}
+          fill={color}
+          stroke="#ffffff"
+          strokeWidth={0.6}
+        />
+      </g>
       {withDots &&
-        stat.points.map((pt) => {
+        stat.points.map((pt, ptIdx) => {
           const own = pt.uid === myUid
           const fill = colorOf ? colorOf(pt.uid) : own ? '#d8492b' : '#ffffff'
           const stroke = colorOf ? (own ? '#21313a' : '#ffffff') : own ? '#ffffff' : '#21313a'
@@ -254,7 +257,8 @@ function CardCloud({
           return (
             <g
               key={pt.uid}
-              className="cursor-pointer"
+              className="reveal-dot cursor-pointer"
+              style={{ animationDelay: `${100 + ptIdx * 70}ms` }}
               onMouseEnter={showTip}
               onMouseLeave={() => onDotTip?.(null)}
               onClick={(e) => {

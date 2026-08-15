@@ -257,6 +257,7 @@ export function RevealTurn({
         <div className="min-w-0" data-tour="reveal-board">
           {session.axisType === '1d' ? (
             <Reveal1D
+              key={viewRound}
               stats={sortedStats}
               prevStats={prevStats}
               participants={participants}
@@ -269,6 +270,7 @@ export function RevealTurn({
             />
           ) : (
             <Reveal2D
+              key={viewRound}
               stats={sortedStats}
               prevStats={prevStats}
               participants={participants}

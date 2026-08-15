@@ -126,6 +126,8 @@ export function Reveal1D({
                         return (
                           <rect
                             key={k}
+                            className="reveal-band"
+                            style={{ animationDelay: `${rowIdx * 40}ms` }}
                             x={pct(v0)}
                             y={MID_Y - 11}
                             width={pct(Math.max(w, 0.0005))}
@@ -162,6 +164,8 @@ export function Reveal1D({
                     )}
                     {/* 中央値 */}
                     <line
+                      className="reveal-band"
+                      style={{ animationDelay: `${rowIdx * 40 + 150}ms` }}
                       x1={pct(s.med)}
                       x2={pct(s.med)}
                       y1={MID_Y - 16}
@@ -171,7 +175,7 @@ export function Reveal1D({
                     />
                     {/* 個人ドット */}
                     {showDots &&
-                      s.points.map((pt) => {
+                      s.points.map((pt, ptIdx) => {
                         const jitter =
                           ((hashString(pt.uid + s.card.id) % 1000) / 1000 - 0.5) * 22
                         const own = pt.uid === myUid
@@ -203,7 +207,8 @@ export function Reveal1D({
                         return (
                           <g
                             key={pt.uid}
-                            className="cursor-pointer"
+                            className="reveal-dot cursor-pointer"
+                            style={{ animationDelay: `${rowIdx * 40 + ptIdx * 70}ms` }}
                             onMouseEnter={showTip}
                             onMouseLeave={() => setTip(null)}
                             onClick={(e) => {
