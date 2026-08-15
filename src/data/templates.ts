@@ -1,4 +1,4 @@
-import type { AxisDef, AxisType } from '../types'
+import type { AxisDef, AxisType, Quadrants } from '../types'
 
 export interface Template {
   id: string
@@ -7,8 +7,11 @@ export interface Template {
   tagline: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
+  quadrants?: Quadrants
   cards: { label: string; description?: string }[]
 }
+
+const EMPTY_AXIS: AxisDef = { label: '', minLabel: '', maxLabel: '' }
 
 /**
  * 並び順は系統ごとに隣り合うように:
@@ -133,29 +136,6 @@ export const TEMPLATES: Template[] = [
     ],
   },
   {
-    id: 'housework',
-    name: '家事分担の見直し',
-    emoji: '🧺',
-    tagline: 'どの家事が重い? 負担感×頻度で「見えない負担」を共有する',
-    axisType: '2d',
-    axes: {
-      x: { label: '負担感', minLabel: '軽い', maxLabel: '重い' },
-      y: { label: '頻度', minLabel: '低い', maxLabel: '高い' },
-    },
-    cards: [
-      { label: '料理' },
-      { label: '食器洗い' },
-      { label: '洗濯' },
-      { label: '掃除機がけ' },
-      { label: '風呂掃除' },
-      { label: 'トイレ掃除' },
-      { label: 'ゴミ出し' },
-      { label: '買い出し' },
-      { label: '衣類の管理・アイロン' },
-      { label: '名もなき家事 (在庫管理等)' },
-    ],
-  },
-  {
     id: 'bousai',
     name: '防災グッズの優先度',
     emoji: '🎒',
@@ -179,6 +159,27 @@ export const TEMPLATES: Template[] = [
   },
 
   /* ---- ビジネス系 ---- */
+  {
+    id: 'swot',
+    name: 'SWOT分析',
+    emoji: '📊',
+    tagline: '事業や組織の要素を 強み/弱み/機会/脅威 の4象限へ仕分けする定番フレームワーク (カードは編集して使ってください)',
+    axisType: '2d',
+    axes: { x: EMPTY_AXIS, y: EMPTY_AXIS },
+    quadrants: { tl: '強み', tr: '弱み', bl: '機会', br: '脅威' },
+    cards: [
+      { label: '技術力' },
+      { label: 'ブランド認知' },
+      { label: '顧客基盤' },
+      { label: '資金力' },
+      { label: '開発スピード' },
+      { label: '市場の成長性' },
+      { label: '競合の動き' },
+      { label: '規制の変化' },
+      { label: '人材確保' },
+      { label: '価格競争' },
+    ],
+  },
   {
     id: 'backlog',
     name: '機能優先度マトリクス',

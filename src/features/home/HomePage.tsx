@@ -105,7 +105,10 @@ export default function HomePage() {
             >
               <div className="flex items-start justify-between">
                 <span className="text-3xl">{t.emoji}</span>
-                <Badge>{t.axisType === '1d' ? '1軸' : '2軸'} ・ {t.cards.length}枚</Badge>
+                <Badge>
+                  {t.quadrants ? '4象限' : t.axisType === '1d' ? '1次元' : '2次元'} ・{' '}
+                  {t.cards.length}枚
+                </Badge>
               </div>
               <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
                 {t.name}

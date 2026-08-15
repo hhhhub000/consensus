@@ -86,6 +86,7 @@ export default function CreatePage() {
         title: template.name,
         axisType: template.axisType,
         axes: template.axes,
+        quadrants: template.quadrants,
         cards: template.cards,
         templateId: template.id,
       }
