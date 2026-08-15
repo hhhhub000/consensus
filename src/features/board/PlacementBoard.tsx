@@ -1,4 +1,5 @@
 import { useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { clamp01 } from '../../lib/utils'
 import type { AxisDef, AxisType, CardDef, Pos, Quadrants } from '../../types'
 
@@ -190,18 +191,23 @@ export function PlacementBoard({
       </div>
 
       {/* ドラッグ中にボード外にいるときのゴースト */}
-      {drag && !drag.pos && dragCard && (
-        <div
-          className="pointer-events-none fixed z-50"
-          style={{
-            left: drag.clientX,
-            top: drag.clientY,
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <ChipBody card={dragCard} dragging />
-        </div>
-      )}
+      {/* body 直下に描画 (祖先の transform で fixed の基準がズレるのを防ぐ) */}
+      {drag &&
+        !drag.pos &&
+        dragCard &&
+        createPortal(
+          <div
+            className="pointer-events-none fixed z-50"
+            style={{
+              left: drag.clientX,
+              top: drag.clientY,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <ChipBody card={dragCard} dragging />
+          </div>,
+          document.body,
+        )}
 
       {!disabled && (
         <div className="mt-3">

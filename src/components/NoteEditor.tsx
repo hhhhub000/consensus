@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Button, Panel } from './ui'
 
 /** カードのメモを書く小さなモーダル */
@@ -24,7 +25,8 @@ export function NoteEditor({
     onClose()
   }
 
-  return (
+  // body 直下に描画 (祖先の transform で fixed の基準がズレるのを防ぐ)
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 p-4"
       onClick={onClose}
@@ -78,6 +80,7 @@ export function NoteEditor({
           </div>
         </div>
       </Panel>
-    </div>
+    </div>,
+    document.body,
   )
 }

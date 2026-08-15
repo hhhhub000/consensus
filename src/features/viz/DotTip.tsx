@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom'
+
 /** 開示ボードのドットにホバー/タップしたときのフローティング表示 */
 export interface DotTipState {
   x: number
@@ -9,7 +11,7 @@ export interface DotTipState {
 
 export function DotTipOverlay({ tip }: { tip: DotTipState | null }) {
   if (!tip) return null
-  return (
+  return createPortal(
     <div
       className="pointer-events-none fixed z-50"
       style={{ left: tip.x, top: tip.y - 12, transform: 'translate(-50%, -100%)' }}
@@ -18,6 +20,7 @@ export function DotTipOverlay({ tip }: { tip: DotTipState | null }) {
         <p className="font-bold">{tip.name ?? '参加者'}</p>
         {tip.note && <p className="mt-0.5 whitespace-pre-wrap font-normal">{tip.note}</p>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

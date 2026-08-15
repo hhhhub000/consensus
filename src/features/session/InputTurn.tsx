@@ -1,5 +1,6 @@
 import type { DriveStep } from 'driver.js'
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { NoteEditor } from '../../components/NoteEditor'
 import { Button, Input, Panel, Spinner } from '../../components/ui'
 import {
@@ -244,7 +245,8 @@ function AddCardDialog({
     onAdd(label.trim())
     onClose()
   }
-  return (
+  // body 直下に描画 (祖先の transform で fixed の基準がズレるのを防ぐ)
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 p-4"
       onClick={onClose}
@@ -277,7 +279,8 @@ function AddCardDialog({
           </Button>
         </div>
       </Panel>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
