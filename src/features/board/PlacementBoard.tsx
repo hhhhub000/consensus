@@ -317,8 +317,26 @@ export function AxisFrame({
     <div className="pointer-events-none absolute inset-0 select-none text-xs text-ink-soft">
       {axisType === '2d' ? (
         <>
-          <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-grid-strong" />
-          <div className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-grid-strong" />
+          {/* 4象限の背景色 (開示のカード色と混ざらないようごく薄く) */}
+          {quadrants && (
+            <>
+              <div className="absolute left-0 top-0 h-1/2 w-1/2" style={{ backgroundColor: 'rgba(42, 120, 214, 0.06)' }} />
+              <div className="absolute right-0 top-0 h-1/2 w-1/2" style={{ backgroundColor: 'rgba(235, 104, 52, 0.06)' }} />
+              <div className="absolute bottom-0 left-0 h-1/2 w-1/2" style={{ backgroundColor: 'rgba(27, 175, 122, 0.06)' }} />
+              <div className="absolute bottom-0 right-0 h-1/2 w-1/2" style={{ backgroundColor: 'rgba(237, 161, 0, 0.055)' }} />
+            </>
+          )}
+          {/* 十字の境界線 (4象限では太く濃く) */}
+          <div
+            className={`absolute top-0 h-full -translate-x-1/2 ${
+              quadrants ? 'left-1/2 w-[2.5px] bg-ink/35' : 'left-1/2 w-px bg-grid-strong'
+            }`}
+          />
+          <div
+            className={`absolute left-0 w-full -translate-y-1/2 ${
+              quadrants ? 'top-1/2 h-[2.5px] bg-ink/35' : 'top-1/2 h-px bg-grid-strong'
+            }`}
+          />
           {/* 4象限ラベル (各区画の中央に薄く表示) */}
           {quadrants &&
             (
