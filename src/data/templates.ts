@@ -8,6 +8,7 @@ export interface Template {
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants
+  gameMode?: boolean
   cards: { label: string; description?: string }[]
 }
 
@@ -66,6 +67,77 @@ export const TEMPLATES: Template[] = [
       { label: '双眼鏡' },
     ],
   },
+  /* ---- ゲームモード系 (ito 風: 主観の感覚をすり合わせるお題) ---- */
+  {
+    id: 'strongest-animal',
+    name: '最強動物決定戦',
+    emoji: '🦁',
+    tagline: '素手のタイマンで最強はどれ? 直感の「強さ」の感覚をすり合わせる',
+    axisType: '1d',
+    gameMode: true,
+    axes: { x: { label: '強さ', minLabel: '弱い', maxLabel: '強い' } },
+    cards: [
+      { label: 'ゴリラ' },
+      { label: 'ヒグマ' },
+      { label: 'ライオン' },
+      { label: 'カバ' },
+      { label: 'ワニ' },
+      { label: 'オオカミ' },
+      { label: 'イノシシ' },
+      { label: 'カンガルー' },
+      { label: 'ダチョウ' },
+      { label: 'アナコンダ' },
+      { label: '猛牛' },
+      { label: '人間 (格闘家)' },
+    ],
+  },
+  {
+    id: 'motehou',
+    name: 'モテると思う行動',
+    emoji: '💘',
+    tagline: 'どの行動がいちばんモテる? 恋愛観の個人差があらわになる定番お題',
+    axisType: '1d',
+    gameMode: true,
+    axes: { x: { label: 'モテ度', minLabel: 'モテない', maxLabel: 'モテる' } },
+    cards: [
+      { label: 'さりげなく車道側を歩く' },
+      { label: '手料理をふるまう' },
+      { label: '店員さんに丁寧' },
+      { label: '字がきれい' },
+      { label: '動物に好かれる' },
+      { label: '筋トレが日課' },
+      { label: '早起きで朝活' },
+      { label: '傘をさっと差し出す' },
+      { label: '会計がスマート' },
+      { label: '笑顔で聞き上手' },
+      { label: 'カラオケがうまい' },
+      { label: '方向音痴' },
+    ],
+  },
+  {
+    id: 'shiawase',
+    name: '幸せを感じる瞬間',
+    emoji: '🍀',
+    tagline: '小さな幸せ、どれがいちばん大きい? 幸福の感覚をすり合わせる',
+    axisType: '1d',
+    gameMode: true,
+    axes: { x: { label: '幸福度', minLabel: '小さい', maxLabel: '大きい' } },
+    cards: [
+      { label: '布団に入った瞬間' },
+      { label: '給料日' },
+      { label: '揚げたてのポテト' },
+      { label: '湯船に浸かる' },
+      { label: '金曜日の夜' },
+      { label: '二度寝' },
+      { label: '推しの新情報' },
+      { label: '旅行の前夜' },
+      { label: '猫を撫でる' },
+      { label: '探し物が見つかる' },
+      { label: 'おろしたての靴下' },
+      { label: '誰もいない家' },
+    ],
+  },
+
   /* ---- 日常系 ---- */
   {
     id: 'moving',

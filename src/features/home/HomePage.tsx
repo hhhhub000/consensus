@@ -110,6 +110,7 @@ export default function HomePage() {
               <div className="flex items-start justify-between">
                 <span className="text-3xl">{t.emoji}</span>
                 <Badge>
+                  {t.gameMode && <span aria-label="ゲームモード">🎮 </span>}
                   {t.quadrants ? '4象限' : t.axisType === '1d' ? '1次元' : '2次元'} ・{' '}
                   {t.cards.length}枚
                 </Badge>
@@ -208,6 +209,7 @@ function MyTemplatesSection() {
               <div className="flex items-start justify-between pr-8">
                 <span className="text-3xl">📌</span>
                 <Badge>
+                  {t.gameMode && <span aria-label="ゲームモード">🎮 </span>}
                   {t.quadrants ? '4象限' : t.axisType === '1d' ? '1次元' : '2次元'} ・{' '}
                   {t.cards.length}枚
                 </Badge>
