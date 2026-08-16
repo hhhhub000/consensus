@@ -71,6 +71,7 @@ interface Preset {
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants
+  gameMode?: boolean
   cards: { label: string }[]
   templateId?: string
 }
@@ -87,6 +88,7 @@ export default function CreatePage() {
         axisType: template.axisType,
         axes: template.axes,
         quadrants: template.quadrants,
+        gameMode: template.gameMode,
         cards: template.cards,
         templateId: template.id,
       }
@@ -100,6 +102,7 @@ export default function CreatePage() {
         axisType: mine.axisType,
         axes: mine.axes,
         quadrants: mine.quadrants,
+        gameMode: mine.gameMode,
         cards: mine.cards,
       }
     }
@@ -120,6 +123,7 @@ export default function CreatePage() {
     preset?.axes.y && preset.axes.y.minLabel ? preset.axes.y : DEFAULT_Y,
   )
   const [quadrants, setQuadrants] = useState<Quadrants>(preset?.quadrants ?? EMPTY_QUAD)
+  const [gameMode, setGameMode] = useState(preset?.gameMode ?? false)
   const [cards, setCards] = useState<CardDraft[]>(() =>
     (preset?.cards ?? [{ label: '' }, { label: '' }, { label: '' }]).map((c) => ({
       key: randomId(6),
@@ -161,6 +165,7 @@ export default function CreatePage() {
             br: quadrants.br.trim(),
           }
         : undefined,
+    gameMode,
   })
 
   const saveAsMyTemplate = () => {
@@ -313,6 +318,30 @@ export default function CreatePage() {
           {boardKind === 'quad' && (
             <QuadrantEditor value={quadrants} onChange={setQuadrants} />
           )}
+        </Panel>
+
+        <Panel className="p-5">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              checked={gameMode}
+              onChange={(e) => setGameMode(e.target.checked)}
+              className="mt-1 size-4 accent-accent"
+            />
+            <span>
+              <span className="flex items-center gap-1.5 text-[13px] font-bold">
+                🎮 ゲームモード
+                <InfoTip align="left">
+                  合意ボードを作る代わりに「開示 → 再入力」を繰り返して意見の一致そのものを目指すモードです。
+                  終了時に一致度や収束の伸びをスコアとランクで発表します。
+                  価値観のすりあわせゲーム (ito など) のような遊び方に向いています。
+                </InfoTip>
+              </span>
+              <span className="mt-0.5 block text-[13px] leading-6 text-ink-soft">
+                合意フェーズなし。ラウンドを重ねて全員の感覚の一致を目指し、最後にスコアを発表します
+              </span>
+            </span>
+          </label>
         </Panel>
 
         <Panel className="p-5" data-tour="create-cards">

@@ -14,6 +14,7 @@ export interface MyTemplate {
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants
+  gameMode?: boolean
   cards: { label: string }[]
   savedAt: number
 }

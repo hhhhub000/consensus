@@ -36,7 +36,9 @@ const PHASES: { key: Phase; label: string; description: string }[] = [
 
 export function SessionHeader({ session }: { session: Session }) {
   const [copied, setCopied] = useState(false)
-  const currentIdx = PHASES.findIndex((p) => p.key === session.phase)
+  // ゲームモードでは合意フェーズを経由しない
+  const phases = session.gameMode ? PHASES.filter((p) => p.key !== 'consensus') : PHASES
+  const currentIdx = phases.findIndex((p) => p.key === session.phase)
 
   const copy = async () => {
     try {
@@ -58,7 +60,7 @@ export function SessionHeader({ session }: { session: Session }) {
       </h1>
       <div className="flex items-center gap-3">
         <ol className="flex items-center gap-1 text-xs">
-          {PHASES.map((p, i) => (
+          {phases.map((p, i) => (
             <li key={p.key} className="flex items-center gap-1">
               {i > 0 && <span className="text-ink-faint">·</span>}
               <Tip

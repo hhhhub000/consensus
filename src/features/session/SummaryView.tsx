@@ -6,8 +6,40 @@ import { formatPercent } from '../../lib/utils'
 import type { Participant, Placement, Session } from '../../types'
 import { PlacementBoard } from '../board/PlacementBoard'
 import { AgreementPanel } from '../viz/AgreementPanel'
+import { GameResult } from './GameResult'
 
 export function SummaryView({
+  session,
+  uid,
+  participants,
+  placements,
+}: {
+  session: Session
+  uid: string
+  participants: Participant[]
+  placements: Placement[]
+}) {
+  if (session.gameMode) {
+    return (
+      <GameResult
+        session={session}
+        uid={uid}
+        participants={participants}
+        placements={placements}
+      />
+    )
+  }
+  return (
+    <ConsensusSummary
+      session={session}
+      uid={uid}
+      participants={participants}
+      placements={placements}
+    />
+  )
+}
+
+function ConsensusSummary({
   session,
   uid,
   participants,

@@ -55,10 +55,17 @@ export function FacilitatorBar({
     }
   }
 
+  const hint =
+    session.gameMode && session.phase === 'reveal'
+      ? '分布を見ながら話し、もう一度入力して一致度を上げましょう。最後にスコアが発表されます'
+      : session.gameMode && session.phase === 'closed'
+        ? 'ゲーム終了! スコアを確認しましょう'
+        : HINTS[session.phase]
+
   if (!isCreator) {
     return (
       <p className="mt-3 rounded-lg border border-ink/10 bg-white/60 px-4 py-2.5 text-sm text-ink-soft">
-        {HINTS[session.phase]}
+        {hint}
       </p>
     )
   }
@@ -122,17 +129,31 @@ export function FacilitatorBar({
           >
             もう1ラウンド入力する
           </Button>
-          <Button
-            variant="accent"
-            size="sm"
-            disabled={busy}
-            onClick={run(async () => {
-              if (!confirm('合意フェーズへ進みますか? 全員で1枚のボードを編集します。')) return
-              await toConsensus(session.id, initialConsensus)
-            })}
-          >
-            合意フェーズへ
-          </Button>
+          {session.gameMode ? (
+            <Button
+              variant="accent"
+              size="sm"
+              disabled={busy}
+              onClick={run(async () => {
+                if (!confirm('結果を発表してゲームを終了しますか?')) return
+                await closeSession(session.id)
+              })}
+            >
+              結果発表して終了
+            </Button>
+          ) : (
+            <Button
+              variant="accent"
+              size="sm"
+              disabled={busy}
+              onClick={run(async () => {
+                if (!confirm('合意フェーズへ進みますか? 全員で1枚のボードを編集します。')) return
+                await toConsensus(session.id, initialConsensus)
+              })}
+            >
+              合意フェーズへ
+            </Button>
+          )}
         </>
       )}
 

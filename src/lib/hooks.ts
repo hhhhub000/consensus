@@ -38,6 +38,7 @@ export function useSession(id: string | undefined): Loadable<Session> {
             axisType: d.axisType,
             axes: d.axes,
             quadrants: d.quadrants ?? undefined,
+            gameMode: !!d.gameMode,
             cards: d.cards,
             createdBy: d.createdBy,
             phase: d.phase,

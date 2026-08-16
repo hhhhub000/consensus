@@ -30,6 +30,8 @@ export interface Session {
   axes: { x: AxisDef; y?: AxisDef }
   /** 設定されている場合、2次元ボードを「4象限」として表示する */
   quadrants?: Quadrants
+  /** ゲームモード: 合意フェーズなしで一致を目指し、終了時にスコアを発表する */
+  gameMode?: boolean
   cards: CardDef[]
   createdBy: string
   phase: Phase

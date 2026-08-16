@@ -26,6 +26,7 @@ export interface CreateSessionInput {
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants
+  gameMode?: boolean
   cards: CardDef[]
   templateId?: string
 }
@@ -46,6 +47,7 @@ export async function createSession(
     axisType: input.axisType,
     axes,
     quadrants: input.quadrants ?? null,
+    gameMode: input.gameMode ?? false,
     cards: input.cards,
     templateId: input.templateId ?? null,
     createdBy: uid,
