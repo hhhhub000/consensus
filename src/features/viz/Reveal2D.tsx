@@ -10,6 +10,8 @@ export type Mode2D = 'all' | 'single' | 'grid'
 interface Props {
   stats: CardStat[]
   prevStats?: Map<string, CardStat>
+  /** 個人トレイル (前ラウンド位置 → 現在位置) を表示 */
+  trails?: boolean
   participants: Participant[]
   myUid: string
   showNames: boolean
@@ -24,6 +26,7 @@ interface Props {
 export function Reveal2D({
   stats,
   prevStats,
+  trails,
   participants,
   myUid,
   showNames,
@@ -137,6 +140,7 @@ export function Reveal2D({
               nameOf={showNames ? nameOf : undefined}
               colorOf={showNames ? colorOf : undefined}
               prev={prevStats?.get(selected.card.id)}
+              trails={trails}
               onDotTip={setTip}
             />
           )}
@@ -168,6 +172,7 @@ function CardCloud({
   nameOf,
   colorOf,
   prev,
+  trails,
   onDotTip,
 }: {
   stat: CardStat
@@ -179,6 +184,8 @@ function CardCloud({
   /** 指定時 (名前表示中) はドットを人物ごとの色で塗り分け */
   colorOf?: (uid: string) => string
   prev?: CardStat
+  /** 個人トレイルを表示 (prev が必要) */
+  trails?: boolean
   onDotTip?: (tip: DotTipState | null) => void
 }) {
   const color = stat.card.color
@@ -245,6 +252,8 @@ function CardCloud({
           const own = pt.uid === myUid
           const fill = colorOf ? colorOf(pt.uid) : own ? '#d8492b' : '#ffffff'
           const stroke = colorOf ? (own ? '#21313a' : '#ffffff') : own ? '#ffffff' : '#21313a'
+          const dotColor = colorOf ? colorOf(pt.uid) : '#8b9aa0'
+          const prevPt = trails ? prev?.points.find((q) => q.uid === pt.uid) : undefined
           const showTip = (e: { clientX: number; clientY: number }) =>
             onDotTip?.({
               x: e.clientX,
@@ -257,10 +266,40 @@ function CardCloud({
               note: pt.note,
             })
           return (
-            <g
-              key={pt.uid}
-              className="reveal-dot cursor-pointer"
-              style={{ animationDelay: `${100 + ptIdx * 70}ms` }}
+            <g key={pt.uid}>
+              {/* トレイル (前ラウンド位置の目印と軌跡。移動アニメとは独立に固定描画) */}
+              {prevPt && (
+                <>
+                  <line
+                    x1={prevPt.pos.x * 100}
+                    y1={prevPt.pos.y * 100}
+                    x2={pt.pos.x * 100}
+                    y2={pt.pos.y * 100}
+                    stroke={dotColor}
+                    strokeWidth={0.5}
+                    strokeDasharray="1.5 1"
+                    opacity={0.55}
+                  />
+                  <circle
+                    cx={prevPt.pos.x * 100}
+                    cy={prevPt.pos.y * 100}
+                    r={1.5}
+                    fill="#ffffff"
+                    stroke={dotColor}
+                    strokeWidth={0.5}
+                    opacity={0.85}
+                  />
+                </>
+              )}
+              <g
+              className={`cursor-pointer ${prevPt ? 'trail-dot' : 'reveal-dot'}`}
+              style={
+                {
+                  animationDelay: `${100 + ptIdx * 70}ms`,
+                  '--sx': prevPt ? `${(prevPt.pos.x - pt.pos.x) * 100}px` : undefined,
+                  '--sy': prevPt ? `${(prevPt.pos.y - pt.pos.y) * 100}px` : undefined,
+                } as React.CSSProperties
+              }
               onMouseEnter={showTip}
               onMouseLeave={() => onDotTip?.(null)}
               onClick={(e) => {
@@ -301,6 +340,7 @@ function CardCloud({
                   {nameOf(pt.uid)}
                 </text>
               )}
+              </g>
             </g>
           )
         })}

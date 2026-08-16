@@ -95,6 +95,16 @@ body {
   }
 }
 
+/* 個人トレイル表示時: ドットが前ラウンド位置から現在位置へスライド */
+.trail-dot {
+  animation: trail-slide 0.7s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+}
+@keyframes trail-slide {
+  from {
+    transform: translate(var(--sx, 0px), var(--sy, 0px));
+  }
+}
+
 /* ページ・フェーズ切替のフェードイン
    fill は backwards にする (forwards だと transform アニメーションが適用され続け、
    子孫の position: fixed の基準がこの要素になってしまうため) */

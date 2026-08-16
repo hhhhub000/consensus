@@ -12,6 +12,8 @@ const SEGMENTS = 48
 interface Props {
   stats: CardStat[]
   prevStats?: Map<string, CardStat>
+  /** 個人トレイル (前ラウンド位置 → 現在位置) を表示 */
+  trails?: boolean
   participants: Participant[]
   myUid: string
   showDots: boolean
@@ -29,6 +31,7 @@ interface Props {
 export function Reveal1D({
   stats,
   prevStats,
+  trails,
   participants,
   myUid,
   showDots,
@@ -191,6 +194,9 @@ export function Reveal1D({
                             ? '#ffffff'
                             : '#21313a'
                         const cy = MID_Y + jitter
+                        const prevPt = trails
+                          ? prevStats?.get(s.card.id)?.points.find((q) => q.uid === pt.uid)
+                          : undefined
                         const showTip = (e: { clientX: number; clientY: number }) =>
                           setTip({
                             x: e.clientX,
@@ -214,6 +220,30 @@ export function Reveal1D({
                               showTip(e)
                             }}
                           >
+                            {/* 前ラウンドからのトレイル */}
+                            {prevPt && (
+                              <>
+                                <line
+                                  x1={pct(prevPt.pos.x)}
+                                  x2={pct(pt.pos.x)}
+                                  y1={cy}
+                                  y2={cy}
+                                  stroke={colorOf(pt.uid)}
+                                  strokeWidth={1.5}
+                                  strokeDasharray="3 2"
+                                  opacity={0.55}
+                                />
+                                <circle
+                                  cx={pct(prevPt.pos.x)}
+                                  cy={cy}
+                                  r={3}
+                                  fill="#ffffff"
+                                  stroke={colorOf(pt.uid)}
+                                  strokeWidth={1.3}
+                                  opacity={0.8}
+                                />
+                              </>
+                            )}
                             <circle
                               cx={pct(pt.pos.x)}
                               cy={cy}

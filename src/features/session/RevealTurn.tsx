@@ -9,6 +9,7 @@ import type { Participant, Placement, Session } from '../../types'
 import { AgreementPanel } from '../viz/AgreementPanel'
 import { Reveal1D } from '../viz/Reveal1D'
 import { Reveal2D, type Mode2D } from '../viz/Reveal2D'
+import { ShiftPanel } from '../viz/ShiftPanel'
 
 type Sort1D = 'theme' | 'median' | 'agreement'
 
@@ -75,7 +76,12 @@ export function RevealTurn({
   const [viewRound, setViewRound] = useState(session.revealedUpTo)
   useEffect(() => setViewRound(session.revealedUpTo), [session.revealedUpTo])
 
-  const [compare, setCompare] = useState(true)
+  type CompareMode = 'off' | 'overall' | 'individual'
+  const [compareMode, setCompareMode] = useState<CompareMode>('overall')
+  // 匿名表示中は個人トレイルを出さない (誰が動いたか推測できてしまうため)
+  useEffect(() => {
+    if (compareMode === 'individual' && !session.showNames) setCompareMode('overall')
+  }, [compareMode, session.showNames])
   const [showDots, setShowDots] = useState(true)
   const [sort, setSort] = useState<Sort1D>('theme')
   const [mode, setMode] = useState<Mode2D>('all')
@@ -89,14 +95,15 @@ export function RevealTurn({
     [session.cards, session.axisType, byRound, viewRound],
   )
   const prevStats = useMemo(() => {
-    if (!compare || viewRound < 2) return undefined
+    if (compareMode === 'off' || viewRound < 2) return undefined
     const prev = computeCardStats(
       session.cards,
       byRound.get(viewRound - 1) ?? [],
       session.axisType,
     )
     return new Map(prev.filter((s) => s.n > 0).map((s) => [s.card.id, s]))
-  }, [compare, viewRound, session.cards, session.axisType, byRound])
+  }, [compareMode, viewRound, session.cards, session.axisType, byRound])
+  const trails = compareMode === 'individual'
 
   const sortedStats = useMemo(() => {
     if (session.axisType !== '1d' || sort === 'theme') return stats
@@ -207,15 +214,19 @@ export function RevealTurn({
           </label>
         )}
         {viewRound > 1 && (
-          <label className="flex cursor-pointer items-center gap-1.5 text-ink-soft">
-            <input
-              type="checkbox"
-              checked={compare}
-              onChange={(e) => setCompare(e.target.checked)}
-              className="size-3.5 accent-ink"
+          <span className="flex items-center gap-1.5 text-ink-soft">
+            比較
+            <Segmented
+              size="sm"
+              options={[
+                { value: 'off' as const, label: 'なし' },
+                { value: 'overall' as const, label: '全体' },
+                ...(session.showNames ? [{ value: 'individual' as const, label: '個人' }] : []),
+              ]}
+              value={compareMode}
+              onChange={setCompareMode}
             />
-            前ラウンドと比較
-          </label>
+          </span>
         )}
       </div>
 
@@ -257,9 +268,10 @@ export function RevealTurn({
         <div className="min-w-0" data-tour="reveal-board">
           {session.axisType === '1d' ? (
             <Reveal1D
-              key={viewRound}
+              key={`${viewRound}-${compareMode}`}
               stats={sortedStats}
               prevStats={prevStats}
+              trails={trails}
               participants={participants}
               myUid={uid}
               showDots={showDots}
@@ -270,9 +282,10 @@ export function RevealTurn({
             />
           ) : (
             <Reveal2D
-              key={viewRound}
+              key={`${viewRound}-${compareMode}`}
               stats={sortedStats}
               prevStats={prevStats}
+              trails={trails}
               participants={participants}
               myUid={uid}
               showNames={session.showNames}
@@ -295,8 +308,17 @@ export function RevealTurn({
             赤いドットはあなた自身の配置。
           </p>
         </div>
-        <div data-tour="reveal-agreement">
+        <div className="space-y-4" data-tour="reveal-agreement">
           <AgreementPanel stats={stats} myUid={uid} axisType={session.axisType} />
+          {viewRound > 1 && compareMode !== 'off' && (
+            <ShiftPanel
+              cards={session.cards}
+              prevPlacements={byRound.get(viewRound - 1) ?? []}
+              currPlacements={byRound.get(viewRound) ?? []}
+              axisType={session.axisType}
+              round={viewRound}
+            />
+          )}
         </div>
       </div>
     </div>
