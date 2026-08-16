@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '../../components/ui'
-import { TEMPLATES } from '../../data/templates'
+import { TEMPLATE_CATEGORIES } from '../../data/templates'
 import { listRoomHistory } from '../../lib/sessionHistory'
 import {
   deleteMyTemplate,
@@ -100,28 +100,36 @@ export default function HomePage() {
         <p className="mt-1 text-[15px] text-ink-soft">
           選ぶとテーマ・軸・カードが入った状態で編集画面が開きます。
         </p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {TEMPLATES.map((t) => (
-            <Link
-              key={t.id}
-              to={`/create?template=${t.id}`}
-              className="group rounded-xl border border-ink/10 bg-surface p-5 shadow-card transition-shadow hover:shadow-lift"
-            >
-              <div className="flex items-start justify-between">
-                <span className="text-3xl">{t.emoji}</span>
-                <Badge>
-                  {t.gameMode && <span aria-label="ゲームモード">🎮 </span>}
-                  {t.quadrants ? '4象限' : t.axisType === '1d' ? '1次元' : '2次元'} ・{' '}
-                  {t.cards.length}枚
-                </Badge>
-              </div>
-              <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
-                {t.name}
-              </h3>
-              <p className="mt-1 text-[13px] leading-6 text-ink-soft">{t.tagline}</p>
-            </Link>
-          ))}
-        </div>
+        {TEMPLATE_CATEGORIES.map((cat) => (
+          <div key={cat.id} className="mt-10">
+            <h3 className="font-display text-xl font-bold">{cat.name}</h3>
+            <p className="mt-1 max-w-3xl text-[13px] leading-6 text-ink-soft">
+              {cat.description}
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {cat.templates.map((t) => (
+                <Link
+                  key={t.id}
+                  to={`/create?template=${t.id}`}
+                  className="group rounded-xl border border-ink/10 bg-surface p-5 shadow-card transition-shadow hover:shadow-lift"
+                >
+                  <div className="flex items-start justify-between">
+                    <span className="text-3xl">{t.emoji}</span>
+                    <Badge>
+                      {t.gameMode && <span aria-label="ゲームモード">🎮 </span>}
+                      {t.quadrants ? '4象限' : t.axisType === '1d' ? '1次元' : '2次元'} ・{' '}
+                      {t.cards.length}枚
+                    </Badge>
+                  </div>
+                  <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
+                    {t.name}
+                  </h3>
+                  <p className="mt-1 text-[13px] leading-6 text-ink-soft">{t.tagline}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
 
       <footer className="border-t border-grid-strong py-8 text-center text-xs text-ink-faint">
