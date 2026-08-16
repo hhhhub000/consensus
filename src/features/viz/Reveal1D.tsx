@@ -58,9 +58,9 @@ export function Reveal1D({
         <span className="text-[11px] font-bold text-ink-faint">カード</span>
         <div>
           <HArrow className="w-full" />
-          <div className="flex items-baseline justify-between text-xs text-ink-soft">
+          <div className="flex items-baseline justify-between text-sm font-bold text-ink">
             <span>{axisMinLabel}</span>
-            <span className="font-bold text-ink">{axisLabel}</span>
+            <span>{axisLabel}</span>
             <span>{axisMaxLabel}</span>
           </div>
         </div>
