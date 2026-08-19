@@ -7,3 +7,5 @@ dist
 *.log
 .env
 .env.*
+# 本番用 Firebase 設定 (公開識別子) はビルドコンテキストに含める
+!.env.production
