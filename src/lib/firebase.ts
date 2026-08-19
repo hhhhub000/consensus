@@ -33,8 +33,11 @@ const app = initializeApp(
   personaName ? `persona-${personaName}` : undefined,
 )
 
+// 名前付きデータベース (既定は honnne)。firebase.json の database と揃えること
+const DATABASE_ID = env.VITE_FIRESTORE_DATABASE_ID ?? 'honnne'
+
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+export const db = getFirestore(app, DATABASE_ID)
 
 if (useEmulator) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })

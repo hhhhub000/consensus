@@ -68,7 +68,9 @@ npx tsc --noEmit  # 型チェック
 
 1. [Firebase Console](https://console.firebase.google.com/) でプロジェクト作成 (Spark 無料枠でOK)
 2. **Build > Authentication > Sign-in method** で「匿名」を有効化
-3. **Build > Firestore Database** を作成 (本番モード)
+3. **Build > Firestore Database** を作成 (本番モード)。データベース ID は `honnne`
+   (別の ID にする場合は firebase.json の `database` と `.env.production` の
+   `VITE_FIRESTORE_DATABASE_ID` を揃えて変更)
 4. プロジェクト設定 > マイアプリ で Web アプリを追加し、構成値を控える
 
 ### 2. セキュリティルールのデプロイ
