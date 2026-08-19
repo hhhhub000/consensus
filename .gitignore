@@ -4,6 +4,8 @@ dist
 .env
 .env.*
 !.env.example
+# Firebase の Web 設定は公開識別子なのでコミットしてよい (本番ビルドに埋め込まれる)
+!.env.production
 firebase-debug.log
 firestore-debug.log
 ui-debug.log

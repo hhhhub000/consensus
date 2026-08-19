@@ -79,14 +79,31 @@ npx firebase use <YOUR_PROJECT_ID>
 npx firebase deploy --only firestore:rules
 ```
 
-### 3. Cloud Run へデプロイ
+### 3. 本番用 Firebase 設定の埋め込み
+
+[.env.production](.env.production) の `REPLACE_ME` を自分の Firebase プロジェクトの値に
+書き換えてコミットします。Vite がビルド時に自動で読み込みます。
+(Firebase の Web 設定は公開識別子で秘密情報ではありません。保護は firestore.rules が担います)
+
+### 4. Cloud Run へデプロイ (release ブランチ push で自動デプロイ)
+
+初回のみ Cloud Run コンソールで設定します。**cloudbuild.yaml は不要**です
+(リポジトリの Dockerfile がそのまま使われます)。
+
+1. リポジトリに `release` ブランチを作って GitHub へ push
+2. [Cloud Run コンソール](https://console.cloud.google.com/run) > サービスの作成 >
+   「**リポジトリから継続的にデプロイする (GitHub)**」を選択
+3. リポジトリを接続し、ブランチに `^release$` を指定
+4. Build Type は「**Dockerfile**」を選択 (パス: `/Dockerfile`)
+5. リージョン (例: asia-northeast1)、「未認証の呼び出しを許可」を設定して作成
+
+以降は `release` ブランチへ push するたびに Cloud Build が Dockerfile をビルドして
+自動デプロイされます。
+
+手動デプロイする場合:
 
 ```bash
-gcloud run deploy consensus `
-  --source . `
-  --region asia-northeast1 `
-  --allow-unauthenticated `
-  --set-build-env-vars "VITE_FIREBASE_API_KEY=<apiKey>,VITE_FIREBASE_AUTH_DOMAIN=<authDomain>,VITE_FIREBASE_PROJECT_ID=<projectId>,VITE_FIREBASE_APP_ID=<appId>"
+gcloud run deploy consensus --source . --region asia-northeast1 --allow-unauthenticated
 ```
 
 デプロイ後、Firebase Console > Authentication > Settings > **承認済みドメイン** に
