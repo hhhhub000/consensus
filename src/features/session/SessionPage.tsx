@@ -56,6 +56,11 @@ function SessionInner({ session, uid }: { session: Session; uid: string }) {
   return (
     <div className="mx-auto max-w-5xl px-4 pb-24 pt-4">
       <SessionHeader session={session} />
+      {session.description && (
+        <p className="mt-3 whitespace-pre-wrap rounded-lg border border-ink/10 bg-surface px-4 py-3 text-sm leading-6 text-ink-soft shadow-card">
+          {session.description}
+        </p>
+      )}
       <FacilitatorBar
         session={session}
         isCreator={isCreator}

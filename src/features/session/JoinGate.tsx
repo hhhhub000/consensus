@@ -35,6 +35,11 @@ export function JoinGate({
     <div className="animate-fade-up mx-auto flex min-h-dvh max-w-md flex-col justify-center px-4 py-10">
       <p className="font-display text-sm font-bold text-ink-soft">ホンネセンサス</p>
       <h1 className="mt-1 font-display text-2xl font-bold leading-snug">{session.title}</h1>
+      {session.description && (
+        <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-ink-soft">
+          {session.description}
+        </p>
+      )}
       <p className="mt-2 text-sm text-ink-soft">
         {session.axisType === '1d' ? '1軸' : '2軸'}ボード ・ カード{session.cards.length}枚 ・
         現在{participants.length}人参加

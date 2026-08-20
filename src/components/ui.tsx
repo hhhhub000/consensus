@@ -4,6 +4,7 @@ import {
   type HTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
+  type TextareaHTMLAttributes,
 } from 'react'
 
 type ButtonVariant = 'primary' | 'accent' | 'outline' | 'ghost'
@@ -52,22 +53,53 @@ export function Input({
   )
 }
 
+export function Textarea({
+  className = '',
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      className={`w-full rounded-lg border border-ink/20 bg-white px-3 py-2 text-sm leading-6 text-ink placeholder:text-ink-faint ${className}`}
+      {...props}
+    />
+  )
+}
+
+/** 入力が必須か任意かを示すバッジ。Field の requirement からも使われる */
+export function RequirementBadge({ requirement }: { requirement: Requirement }) {
+  return requirement === 'required' ? (
+    <span className="rounded-sm bg-accent-soft px-1.5 py-0.5 text-[10px] font-bold text-accent-deep">
+      必須
+    </span>
+  ) : (
+    <span className="rounded-sm bg-ink/5 px-1.5 py-0.5 text-[10px] font-bold text-ink-faint">
+      任意
+    </span>
+  )
+}
+
+export type Requirement = 'required' | 'optional'
+
 export function Field({
   label,
   hint,
   tip,
+  requirement,
   children,
 }: {
   label: string
   hint?: string
   /** ⓘ アイコンにフォーカス/ホバーで表示される説明 */
   tip?: ReactNode
+  /** 指定すると「必須 / 任意」バッジをラベル横に表示する */
+  requirement?: Requirement
   children: ReactNode
 }) {
   return (
     <label className="block">
       <span className="mb-1.5 flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
         {label}
+        {requirement && <RequirementBadge requirement={requirement} />}
         {tip && <InfoTip>{tip}</InfoTip>}
       </span>
       {children}

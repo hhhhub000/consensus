@@ -11,6 +11,8 @@ import { randomId } from './utils'
 export interface MyTemplate {
   id: string
   title: string
+  /** テーマの状況説明 (任意) */
+  description?: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants

@@ -35,6 +35,7 @@ export function useSession(id: string | undefined): Loadable<Session> {
           data: {
             id: snap.id,
             title: d.title,
+            description: d.description || undefined,
             axisType: d.axisType,
             axes: d.axes,
             quadrants: d.quadrants ?? undefined,
