@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { Segmented } from '../../components/ui'
 import { computeCardStats, overallAgreement, type CardStat } from '../../lib/derive'
 import { groupByRound } from '../../lib/hooks'
+import { useReplay } from '../../lib/replay'
 import { startTour, useTour } from '../../lib/tour'
 import { formatPercent } from '../../lib/utils'
 import type { Participant, Placement, Session } from '../../types'
 import { AgreementPanel } from '../viz/AgreementPanel'
 import { Reveal1D } from '../viz/Reveal1D'
 import { Reveal2D, type Mode2D } from '../viz/Reveal2D'
+import { ReplayButton, ReplayOverlay } from '../viz/ReplayControls'
 import { ShiftPanel } from '../viz/ShiftPanel'
 
 type Sort1D = 'theme' | 'median' | 'agreement'
@@ -90,20 +92,26 @@ export function RevealTurn({
 
   const byRound = useMemo(() => groupByRound(placements), [placements])
 
+  // リプレイ再生: R1 → R2 → … と表示ラウンドを送る
+  const replay = useReplay(session.revealedUpTo, setViewRound)
+
   const stats = useMemo(
     () => computeCardStats(session.cards, byRound.get(viewRound) ?? [], session.axisType),
     [session.cards, session.axisType, byRound, viewRound],
   )
+  // 再生中は比較モードによらず前ラウンドを参照する (変化そのものを見せるため)
+  const withPrev = replay.playing || compareMode !== 'off'
   const prevStats = useMemo(() => {
-    if (compareMode === 'off' || viewRound < 2) return undefined
+    if (!withPrev || viewRound < 2) return undefined
     const prev = computeCardStats(
       session.cards,
       byRound.get(viewRound - 1) ?? [],
       session.axisType,
     )
     return new Map(prev.filter((s) => s.n > 0).map((s) => [s.card.id, s]))
-  }, [compareMode, viewRound, session.cards, session.axisType, byRound])
-  const trails = compareMode === 'individual'
+  }, [withPrev, viewRound, session.cards, session.axisType, byRound])
+  // 匿名表示中は個人の移動を追えないよう、再生中も集計のみをラウンド送りする
+  const trails = replay.playing ? session.showNames : compareMode === 'individual'
 
   const sortedStats = useMemo(() => {
     if (session.axisType !== '1d' || sort === 'theme') return stats
@@ -175,9 +183,13 @@ export function RevealTurn({
             size="sm"
             options={rounds.map((r) => ({ value: String(r), label: `R${r}` }))}
             value={String(viewRound)}
-            onChange={(v) => setViewRound(Number(v))}
+            onChange={(v) => {
+              replay.stop()
+              setViewRound(Number(v))
+            }}
           />
         )}
+        <ReplayButton replay={replay} />
         {session.axisType === '2d' && (
           <Segmented
             size="sm"
@@ -265,10 +277,11 @@ export function RevealTurn({
       )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0" data-tour="reveal-board">
+        <div className="relative min-w-0" data-tour="reveal-board">
+          <ReplayOverlay replay={replay} />
           {session.axisType === '1d' ? (
             <Reveal1D
-              key={`${viewRound}-${compareMode}`}
+              key={`${viewRound}-${compareMode}-${replay.runId}`}
               stats={sortedStats}
               prevStats={prevStats}
               trails={trails}
@@ -282,7 +295,7 @@ export function RevealTurn({
             />
           ) : (
             <Reveal2D
-              key={`${viewRound}-${compareMode}`}
+              key={`${viewRound}-${compareMode}-${replay.runId}`}
               stats={sortedStats}
               prevStats={prevStats}
               trails={trails}

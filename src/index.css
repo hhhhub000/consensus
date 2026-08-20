@@ -105,6 +105,20 @@ body {
   }
 }
 
+/* リプレイ再生の進捗バー。ラウンドごとに from → to へ線形に伸びる */
+.replay-progress {
+  width: var(--replay-to, 100%);
+  animation: replay-progress var(--replay-step, 1700ms) linear both;
+}
+@keyframes replay-progress {
+  from {
+    width: var(--replay-from, 0%);
+  }
+  to {
+    width: var(--replay-to, 100%);
+  }
+}
+
 /* 議論中に追加されたカードが「生まれる」演出。
    ポップイン (弾む拡大) + 朱色のリングが2回広がって消える */
 .card-born {
