@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { clamp01 } from '../../lib/utils'
 import type { AxisDef, AxisType, CardDef, Pos, Quadrants } from '../../types'
@@ -25,6 +25,44 @@ export interface PlacementBoardProps {
   /** カードチップの右肩に出す注記 (合意ボードの「最終移動者」など) */
   cardNote?: (cardId: string) => string | undefined
   trayHint?: string
+}
+
+/** 「生まれた」演出を出す時間 (ms)。CSS の card-born アニメーション長に合わせる */
+const BORN_MS = 2400
+
+/**
+ * 前回の描画には無かったカード = 議論中に (多くは他の参加者が) 追加されたカード。
+ * マウント直後の初期カードは対象外。BORN_MS 後に演出を解除する。
+ */
+function useBornCards(cards: CardDef[]): Set<string> {
+  const known = useRef<Set<string> | null>(null)
+  const timers = useRef<number[]>([])
+  const [born, setBorn] = useState<Set<string>>(() => new Set())
+
+  useEffect(() => {
+    if (!known.current) {
+      known.current = new Set(cards.map((c) => c.id))
+      return
+    }
+    const fresh = cards.filter((c) => !known.current!.has(c.id)).map((c) => c.id)
+    if (fresh.length === 0) return
+    fresh.forEach((id) => known.current!.add(id))
+    setBorn((prev) => new Set([...prev, ...fresh]))
+    timers.current.push(
+      window.setTimeout(() => {
+        setBorn((prev) => {
+          const next = new Set(prev)
+          fresh.forEach((id) => next.delete(id))
+          return next
+        })
+      }, BORN_MS),
+    )
+  }, [cards])
+
+  // アンマウント時に保留中のタイマーを破棄
+  useEffect(() => () => timers.current.forEach((t) => clearTimeout(t)), [])
+
+  return born
 }
 
 interface DragState {
@@ -54,6 +92,7 @@ export function PlacementBoard({
   cardNote,
   trayHint,
 }: PlacementBoardProps) {
+  const bornCards = useBornCards(cards)
   const boardRef = useRef<HTMLDivElement>(null)
   // ハンドラは ref を読む (連続する pointer イベント間で state の反映を待たないため)
   const dragRef = useRef<DragState | null>(null)
@@ -155,6 +194,7 @@ export function PlacementBoard({
               card={card}
               note={cardNote?.(card.id)}
               noteMark={hasNote?.(card.id)}
+              born={bornCards.has(card.id)}
               disabled={disabled}
               dragging={isDragging}
               style={{
@@ -221,12 +261,15 @@ export function PlacementBoard({
           </div>
           <div className="flex min-h-11 flex-wrap gap-2 rounded-lg border border-dashed border-ink/20 bg-white/40 p-2">
             {trayCards.length === 0 && (
-              <span className="px-1 py-1 text-xs text-ink-faint">すべて配置済み</span>
+              <span className="px-1 py-1 text-xs text-ink-faint">
+                {cards.length === 0 ? 'カードがまだありません' : 'すべて配置済み'}
+              </span>
             )}
             {trayCards.map((card) => (
               <CardChip
                 key={card.id}
                 card={card}
+                born={bornCards.has(card.id)}
                 disabled={disabled}
                 dragging={drag?.cardId === card.id}
                 onPointerDown={startDrag(card.id)}
@@ -246,6 +289,7 @@ function CardChip({
   card,
   note,
   noteMark,
+  born,
   disabled,
   dragging,
   style,
@@ -254,6 +298,8 @@ function CardChip({
   card: CardDef
   note?: string
   noteMark?: boolean
+  /** 追加された直後のカード (生成アニメーション) */
+  born?: boolean
   disabled?: boolean
   dragging?: boolean
   style?: React.CSSProperties
@@ -274,7 +320,7 @@ function CardChip({
       aria-label={`カード: ${card.label}`}
       {...handlers}
     >
-      <ChipBody card={card} note={note} noteMark={noteMark} dragging={dragging} />
+      <ChipBody card={card} note={note} noteMark={noteMark} born={born} dragging={dragging} />
     </button>
   )
 }
@@ -283,15 +329,17 @@ function ChipBody({
   card,
   note,
   noteMark,
+  born,
   dragging,
 }: {
   card: CardDef
   note?: string
   noteMark?: boolean
+  born?: boolean
   dragging?: boolean
 }) {
   return (
-    <span className="relative inline-block">
+    <span className={`relative inline-block ${born ? 'card-born' : ''}`}>
       <span
         className={`inline-block max-w-32 truncate rounded-md border border-ink/10 bg-white px-2 py-1 text-xs font-medium leading-4 text-ink md:max-w-40 ${
           dragging ? 'shadow-lift ring-2 ring-accent/60' : 'shadow-card'

@@ -26,6 +26,8 @@ export interface Quadrants {
 export interface Session {
   id: string
   title: string
+  /** テーマの状況説明 (任意)。参加者にセッション画面で表示される */
+  description?: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   /** 設定されている場合、2次元ボードを「4象限」として表示する */

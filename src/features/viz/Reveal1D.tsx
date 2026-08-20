@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { CardStat } from '../../lib/derive'
 import { hashString } from '../../lib/utils'
 import type { Participant } from '../../types'
@@ -8,6 +8,29 @@ import { DotTipOverlay, type DotTipState } from './DotTip'
 const ROW_H = 48
 const MID_Y = ROW_H / 2
 const SEGMENTS = 48
+
+/**
+ * 行SVGは幅100%・x座標も % なので、CSS の translate に使える px 量が分からない。
+ * 帯の実幅を測って `--band-w` としてコンテナに置き、各ドットは
+ * `calc(var(--band-w) * dx)` でスライド量を求める。
+ * state ではなく DOM に直接書くのは、初回ペイント前 (useLayoutEffect) に確定させて
+ * スライドアニメーションを 0px から始めてしまわないため。
+ */
+function useBandWidth() {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const bandRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    const band = bandRef.current
+    if (!root || !band) return
+    const apply = () => root.style.setProperty('--band-w', `${band.getBoundingClientRect().width}px`)
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(band)
+    return () => ro.disconnect()
+  }, [])
+  return { rootRef, bandRef }
+}
 
 interface Props {
   stats: CardStat[]
@@ -48,18 +71,20 @@ export function Reveal1D({
   const colorOf = (uid: string) => byUid.get(uid)?.color ?? '#8b9aa0'
 
   const [tip, setTip] = useState<DotTipState | null>(null)
+  const { rootRef, bandRef } = useBandWidth()
 
   const pct = (v: number) => `${(v * 100).toFixed(2)}%`
 
   return (
     <div
+      ref={rootRef}
       className="overflow-hidden rounded-xl border border-ink/15 bg-surface shadow-card"
       onClick={() => setTip(null)}
     >
       {/* 軸ヘッダー (入力ボードと同じ向き・同じ表現) */}
       <div className="grid grid-cols-[7rem_1fr] items-end gap-2 border-b border-ink/10 px-3 pb-1.5 pt-2 sm:grid-cols-[9rem_1fr]">
         <span className="text-[11px] font-bold text-ink-faint">カード</span>
-        <div>
+        <div ref={bandRef}>
           <HArrow className="w-full" />
           <div className="flex items-baseline justify-between text-sm font-bold text-ink">
             <span>{axisMinLabel}</span>
@@ -209,18 +234,8 @@ export function Reveal1D({
                             note: pt.note,
                           })
                         return (
-                          <g
-                            key={pt.uid}
-                            className="reveal-dot cursor-pointer"
-                            style={{ animationDelay: `${rowIdx * 40 + ptIdx * 70}ms` }}
-                            onMouseEnter={showTip}
-                            onMouseLeave={() => setTip(null)}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              showTip(e)
-                            }}
-                          >
-                            {/* 前ラウンドからのトレイル */}
+                          <g key={pt.uid}>
+                            {/* 前ラウンドの目印と軌跡 (ドットのスライドとは独立に固定描画) */}
                             {prevPt && (
                               <>
                                 <line
@@ -244,26 +259,45 @@ export function Reveal1D({
                                 />
                               </>
                             )}
-                            <circle
-                              cx={pct(pt.pos.x)}
-                              cy={cy}
-                              r={own ? 5 : 4}
-                              fill={fill}
-                              stroke={stroke}
-                              strokeWidth={own && showNames ? 2 : 1.4}
-                            />
-                            {/* メモありマーク */}
-                            {pt.note && (
+                            <g
+                              className={`cursor-pointer ${prevPt ? 'trail-dot' : 'reveal-dot'}`}
+                              style={
+                                {
+                                  animationDelay: `${rowIdx * 40 + ptIdx * 70}ms`,
+                                  // 行SVGは % 座標なので、実測した帯幅から px のスライド量を作る
+                                  '--sx': prevPt
+                                    ? `calc(var(--band-w, 0px) * ${prevPt.pos.x - pt.pos.x})`
+                                    : undefined,
+                                } as React.CSSProperties
+                              }
+                              onMouseEnter={showTip}
+                              onMouseLeave={() => setTip(null)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                showTip(e)
+                              }}
+                            >
                               <circle
                                 cx={pct(pt.pos.x)}
                                 cy={cy}
-                                transform="translate(4, -4)"
-                                r={2}
-                                fill="#21313a"
-                                stroke="#ffffff"
-                                strokeWidth={0.8}
+                                r={own ? 5 : 4}
+                                fill={fill}
+                                stroke={stroke}
+                                strokeWidth={own && showNames ? 2 : 1.4}
                               />
-                            )}
+                              {/* メモありマーク */}
+                              {pt.note && (
+                                <circle
+                                  cx={pct(pt.pos.x)}
+                                  cy={cy}
+                                  transform="translate(4, -4)"
+                                  r={2}
+                                  fill="#21313a"
+                                  stroke="#ffffff"
+                                  strokeWidth={0.8}
+                                />
+                              )}
+                            </g>
                           </g>
                         )
                       })}

@@ -225,6 +225,11 @@ function MyTemplatesSection() {
               <h3 className="mt-3 font-display text-lg font-bold group-hover:text-accent-deep">
                 {t.title}
               </h3>
+              {t.description && (
+                <p className="mt-1 line-clamp-2 text-[13px] leading-6 text-ink-soft">
+                  {t.description}
+                </p>
+              )}
               <p className="mt-1 text-[13px] leading-6 text-ink-soft">
                 {new Date(t.savedAt).toLocaleDateString('ja-JP')} 保存 ・{' '}
                 {t.quadrants

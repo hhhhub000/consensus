@@ -1,7 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import type { DriveStep } from 'driver.js'
-import { Button, Field, InfoTip, Input, Panel, Spinner } from '../../components/ui'
+import {
+  Button,
+  Field,
+  InfoTip,
+  Input,
+  Panel,
+  RequirementBadge,
+  Spinner,
+  Textarea,
+} from '../../components/ui'
 import { getTemplate } from '../../data/templates'
 import { getMyTemplate, saveMyTemplate } from '../../lib/templateStore'
 import { createSession } from '../../lib/db'
@@ -52,7 +61,7 @@ const CREATE_TOUR: DriveStep[] = [
     popover: {
       title: 'カード = 議論の要素',
       description:
-        '参加者はこのカードを軸の上にドラッグして意見を表明します。議論したい要素を1枚ずつ追加してください。',
+        '参加者はこのカードを軸の上にドラッグして意見を表明します。作成後 (入力フェーズ中) にも追加できるので、あとから足しても構いません。',
     },
   },
   {
@@ -66,8 +75,9 @@ const CREATE_TOUR: DriveStep[] = [
 
 interface Preset {
   heading: string
-  tagline?: string
+  source: string
   title: string
+  description: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants
@@ -83,8 +93,9 @@ export default function CreatePage() {
     if (template) {
       return {
         heading: `${template.emoji} ${template.name}`,
-        tagline: template.tagline,
+        source: 'テンプレートから作成',
         title: template.name,
+        description: template.tagline,
         axisType: template.axisType,
         axes: template.axes,
         quadrants: template.quadrants,
@@ -97,8 +108,9 @@ export default function CreatePage() {
     if (mine) {
       return {
         heading: `📌 ${mine.title}`,
-        tagline: 'マイテンプレートから作成',
+        source: 'マイテンプレートから作成',
         title: mine.title,
+        description: mine.description ?? '',
         axisType: mine.axisType,
         axes: mine.axes,
         quadrants: mine.quadrants,
@@ -113,6 +125,7 @@ export default function CreatePage() {
 
   const [name, setName] = useState(() => localStorage.getItem('consensus:name') ?? '')
   const [title, setTitle] = useState(preset?.title ?? '')
+  const [description, setDescription] = useState(preset?.description ?? '')
   const [boardKind, setBoardKind] = useState<BoardKind>(
     preset ? (preset.quadrants ? 'quad' : preset.axisType) : '1d',
   )
@@ -142,10 +155,14 @@ export default function CreatePage() {
   const quadComplete = [quadrants.tl, quadrants.tr, quadrants.bl, quadrants.br].every((v) =>
     v.trim(),
   )
-  const boardOk = boardKind === 'quad' ? quadComplete : Boolean(axisX.minLabel.trim())
-  const canSubmit =
-    !submitting && name.trim() && title.trim() && validCards.length >= 2 && boardOk
-  const canSave = Boolean(title.trim()) && validCards.length >= 2 && boardOk
+  const axisComplete = (a: AxisDef) => Boolean(a.minLabel.trim() && a.maxLabel.trim())
+  const boardOk =
+    boardKind === 'quad'
+      ? quadComplete
+      : axisComplete(axisX) && (boardKind === '2d' ? axisComplete(axisY) : true)
+  // カードは作成後 (入力フェーズ中) にも追加できるため必須ではない
+  const canSubmit = !submitting && Boolean(name.trim() && title.trim() && boardOk)
+  const canSave = Boolean(title.trim()) && boardOk
 
   // BoardKind をデータモデル (axisType + quadrants) に変換
   const boardConfig = () => ({
@@ -172,11 +189,40 @@ export default function CreatePage() {
     if (!canSave) return
     saveMyTemplate({
       title: title.trim(),
+      description: description.trim(),
       ...boardConfig(),
       cards: validCards.map((c) => ({ label: c.label.trim() })),
     })
     setSavedMsg(true)
     setTimeout(() => setSavedMsg(false), 2500)
+  }
+
+  // 作成ボタンが押せない理由の一覧 (ボタン直上に表示し、クリックで該当箇所へ移動)
+  const missing: { key: string; label: string; targetId: string }[] = []
+  if (!name.trim())
+    missing.push({ key: 'name', label: 'あなたの表示名', targetId: 'field-name' })
+  if (!title.trim()) missing.push({ key: 'title', label: 'テーマ名', targetId: 'field-title' })
+  if (boardKind === 'quad' && !quadComplete)
+    missing.push({ key: 'quad', label: '象限の名前 (4つすべて)', targetId: 'field-axis' })
+  if (boardKind !== 'quad' && !axisComplete(axisX))
+    missing.push({
+      key: 'axis',
+      label: boardKind === '2d' ? '横軸の両端ラベル' : '軸の両端ラベル',
+      targetId: 'field-axis',
+    })
+  if (boardKind === '2d' && !axisComplete(axisY))
+    missing.push({ key: 'axisY', label: '縦軸の両端ラベル', targetId: 'field-axis' })
+
+  const jumpTo = (targetId: string) => {
+    const el = document.getElementById(targetId)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // スクロール後、対象内の最初の「空の」入力欄にフォーカス
+    setTimeout(() => {
+      const inputs = [...el.querySelectorAll<HTMLInputElement>('input:not([type="checkbox"])')]
+      const target = inputs.find((i) => !i.value.trim()) ?? inputs[0]
+      target?.focus({ preventScroll: true })
+    }, 400)
   }
 
   const submit = async () => {
@@ -188,6 +234,7 @@ export default function CreatePage() {
       const id = await createSession(
         {
           title: title.trim(),
+          description: description.trim(),
           ...boardConfig(),
           cards: validCards.map((c, i) => ({
             id: randomId(8),
@@ -227,12 +274,14 @@ export default function CreatePage() {
       </header>
 
       <h1 className="font-display text-2xl font-bold">{preset?.heading ?? '新しいテーマ'}</h1>
-      {preset?.tagline && <p className="mt-1 text-sm text-ink-soft">{preset.tagline}</p>}
+      {preset && <p className="mt-1 text-sm text-ink-soft">{preset.source}</p>}
 
       <div className="mt-6 space-y-6">
         <Panel className="space-y-4 p-5" data-tour="create-basic">
+          <div id="field-name">
           <Field
             label="あなたの表示名"
+            requirement="required"
             hint="参加者に表示される名前です"
             tip={
               <>
@@ -248,8 +297,11 @@ export default function CreatePage() {
               maxLength={20}
             />
           </Field>
+          </div>
+          <div id="field-title">
           <Field
             label="テーマ名"
+            requirement="required"
             tip={
               <>
                 みんなで合意したい議題です。
@@ -266,11 +318,37 @@ export default function CreatePage() {
               maxLength={60}
             />
           </Field>
+          </div>
+          <div id="field-description">
+          <Field
+            label="テーマの説明"
+            requirement="optional"
+            hint="参加者のセッション画面に表示されます。前提や状況の共有に使ってください"
+            tip={
+              <>
+                議論の前提となる状況やルールを書きます。カードを配置する全員が同じ前提に
+                立てるようにするための欄です。
+                <span className="mt-1 block text-white/70">
+                  例:「月面に不時着。母船まで320km、持っていく物資の優先度は?」
+                </span>
+              </>
+            }
+          >
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="例: 月面に不時着。母船まで320km、持っていく物資の優先度は?"
+              rows={3}
+              maxLength={400}
+            />
+          </Field>
+          </div>
         </Panel>
 
-        <Panel className="space-y-4 p-5" data-tour="create-axis">
+        <Panel className="space-y-4 p-5" data-tour="create-axis" id="field-axis">
           <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
             タイプ
+            <RequirementBadge requirement="required" />
             <InfoTip align="left">
               カードをどんなボードに置くかを選びます。
               <span className="mt-1 block text-white/70">1次元軸: 1つの基準で並べる (例: 優先度)</span>
@@ -344,10 +422,11 @@ export default function CreatePage() {
           </label>
         </Panel>
 
-        <Panel className="p-5" data-tour="create-cards">
+        <Panel className="p-5" data-tour="create-cards" id="field-cards">
           <div className="mb-3 flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
               カード ({validCards.length}枚)
+              <RequirementBadge requirement="optional" />
               <InfoTip align="left">
                 議論したい要素を1枚ずつカードにします。参加者はこのカードを軸の上に
                 ドラッグして自分の意見を表明します。
@@ -394,11 +473,33 @@ export default function CreatePage() {
             ))}
           </ul>
           <p className="mt-2 text-xs text-ink-faint">
-            議論したい要素を1枚ずつカードにします。2枚以上必要です。
+            議論したい要素を1枚ずつカードにします。作成後 (入力フェーズ中) に参加者が
+            追加することもできるので、ここでは空のままでも作成できます。
           </p>
         </Panel>
 
         {error && <p className="text-sm font-medium text-accent-deep">{error}</p>}
+
+        {/* 作成に足りない項目のガイド (クリックで該当フィールドへ移動) */}
+        {missing.length > 0 && (
+          <div className="rounded-lg border border-accent/30 bg-accent-soft/40 px-4 py-3">
+            <p className="text-[13px] font-bold text-accent-deep">
+              作成にはあと{missing.length}項目の入力が必要です
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {missing.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => jumpTo(m.targetId)}
+                  className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-white px-3 py-1 text-[13px] font-medium text-accent-deep hover:bg-accent-soft"
+                >
+                  ↑ {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
@@ -448,7 +549,7 @@ function AxisEditor({
         </InfoTip>
       </p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <Field label="軸の名前">
+        <Field label="軸の名前" requirement="optional">
           <Input
             value={axis.label}
             onChange={(e) => onChange({ ...axis, label: e.target.value })}
@@ -456,7 +557,7 @@ function AxisEditor({
             maxLength={20}
           />
         </Field>
-        <Field label="小さい側">
+        <Field label="小さい側" requirement="required">
           <Input
             value={axis.minLabel}
             onChange={(e) => onChange({ ...axis, minLabel: e.target.value })}
@@ -464,7 +565,7 @@ function AxisEditor({
             maxLength={20}
           />
         </Field>
-        <Field label="大きい側">
+        <Field label="大きい側" requirement="required">
           <Input
             value={axis.maxLabel}
             onChange={(e) => onChange({ ...axis, maxLabel: e.target.value })}
@@ -499,7 +600,7 @@ function QuadrantEditor({
         <div className="pointer-events-none absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-grid-strong" aria-hidden />
         <div className="pointer-events-none absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-grid-strong" aria-hidden />
         {fields.map((f) => (
-          <Field key={f.key} label={f.label}>
+          <Field key={f.key} label={f.label} requirement="required">
             <Input
               value={value[f.key]}
               onChange={(e) => onChange({ ...value, [f.key]: e.target.value })}

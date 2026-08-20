@@ -23,6 +23,7 @@ export const consensusRef = (id: string) => doc(db, 'sessions', id, 'consensus',
 
 export interface CreateSessionInput {
   title: string
+  description?: string
   axisType: AxisType
   axes: { x: AxisDef; y?: AxisDef }
   quadrants?: Quadrants
@@ -44,6 +45,7 @@ export async function createSession(
       : { x: input.axes.x }
   await setDoc(sessionRef(id), {
     title: input.title,
+    description: input.description ?? '',
     axisType: input.axisType,
     axes,
     quadrants: input.quadrants ?? null,

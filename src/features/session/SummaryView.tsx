@@ -6,6 +6,8 @@ import { formatPercent } from '../../lib/utils'
 import type { Participant, Placement, Session } from '../../types'
 import { PlacementBoard } from '../board/PlacementBoard'
 import { AgreementPanel } from '../viz/AgreementPanel'
+import { ReplaySection } from '../viz/ReplaySection'
+import { ShiftPanel } from '../viz/ShiftPanel'
 import { GameResult } from './GameResult'
 
 export function SummaryView({
@@ -106,6 +108,15 @@ function ConsensusSummary({
         />
         <div className="space-y-4">
           <AgreementPanel stats={finalStats} myUid={uid} axisType={session.axisType} />
+          {session.revealedUpTo > 1 && (
+            <ShiftPanel
+              cards={session.cards}
+              prevPlacements={byRound.get(session.revealedUpTo - 1) ?? []}
+              currPlacements={byRound.get(session.revealedUpTo) ?? []}
+              axisType={session.axisType}
+              round={session.revealedUpTo}
+            />
+          )}
           <Link
             to="/"
             className="block rounded-lg border border-ink/15 bg-white/70 px-4 py-2.5 text-center text-sm font-medium hover:border-ink/40"
@@ -114,6 +125,13 @@ function ConsensusSummary({
           </Link>
         </div>
       </div>
+
+      <ReplaySection
+        session={session}
+        uid={uid}
+        participants={participants}
+        placements={placements}
+      />
 
       <NotesList
         session={session}
