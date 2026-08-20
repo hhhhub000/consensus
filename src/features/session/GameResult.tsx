@@ -5,6 +5,8 @@ import { groupByRound } from '../../lib/hooks'
 import { clamp, formatPercent } from '../../lib/utils'
 import type { Participant, Placement, Session } from '../../types'
 import { AgreementPanel } from '../viz/AgreementPanel'
+import { ReplaySection } from '../viz/ReplaySection'
+import { ShiftPanel } from '../viz/ShiftPanel'
 
 /**
  * ゲームモードの結果発表。
@@ -138,6 +140,15 @@ export function GameResult({
               </li>
             </ul>
           </div>
+          {rounds > 1 && (
+            <ShiftPanel
+              cards={session.cards}
+              prevPlacements={byRound.get(rounds - 1) ?? []}
+              currPlacements={byRound.get(rounds) ?? []}
+              axisType={session.axisType}
+              round={rounds}
+            />
+          )}
           <Link
             to="/"
             className="block rounded-lg border border-ink/15 bg-white/70 px-4 py-2.5 text-center text-sm font-medium hover:border-ink/40"
@@ -146,6 +157,13 @@ export function GameResult({
           </Link>
         </div>
       </div>
+
+      <ReplaySection
+        session={session}
+        uid={uid}
+        participants={participants}
+        placements={placements}
+      />
     </div>
   )
 }

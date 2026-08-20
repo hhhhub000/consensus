@@ -10,7 +10,7 @@ import type { Participant, Placement, Session } from '../../types'
 import { AgreementPanel } from '../viz/AgreementPanel'
 import { Reveal1D } from '../viz/Reveal1D'
 import { Reveal2D, type Mode2D } from '../viz/Reveal2D'
-import { ReplayButton, ReplayOverlay } from '../viz/ReplayControls'
+import { ReplayButton, ReplayHud } from '../viz/ReplayControls'
 import { ShiftPanel } from '../viz/ShiftPanel'
 
 type Sort1D = 'theme' | 'median' | 'agreement'
@@ -277,8 +277,8 @@ export function RevealTurn({
       )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="relative min-w-0" data-tour="reveal-board">
-          <ReplayOverlay replay={replay} />
+        <div className="min-w-0" data-tour="reveal-board">
+          <ReplayHud replay={replay} />
           {session.axisType === '1d' ? (
             <Reveal1D
               key={`${viewRound}-${compareMode}-${replay.runId}`}

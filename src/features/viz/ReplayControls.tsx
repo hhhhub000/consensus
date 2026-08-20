@@ -29,23 +29,28 @@ export function ReplayButton({
 }
 
 /**
- * 再生中にボード上へ重ねるラウンドバッジと進捗バー。
- * 親要素に `relative` が必要。クリックは透過させる。
+ * ボードの直上に置く再生ラウンドのバッジと進捗バー。
+ * 盤面の情報 (1次元の軸ヘッダー、2次元のY軸ラベル) を隠さないよう重ねずに配置し、
+ * 再生していない間も同じ高さを invisible で確保して盤面がガタつかないようにする。
  */
-export function ReplayOverlay({ replay }: { replay: Replay }) {
-  if (!replay.playing) return null
-  const from = ((replay.round - 1) / replay.total) * 100
-  const to = (replay.round / replay.total) * 100
+export function ReplayHud({ replay }: { replay: Replay }) {
+  if (!replay.enabled) return null
+  const shown = replay.round || 1
+  const from = ((shown - 1) / replay.total) * 100
+  const to = (shown / replay.total) * 100
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-10 px-2 pt-2">
+    <div
+      className={`mb-1.5 select-none ${replay.playing ? '' : 'invisible'}`}
+      aria-hidden={!replay.playing}
+    >
       <div className="flex items-center gap-2">
-        <span className="rounded-md bg-ink/90 px-2.5 py-1 font-mono text-sm font-bold text-white shadow-card">
-          R{replay.round}
+        <span className="rounded-md bg-ink/90 px-2.5 py-0.5 font-mono text-sm font-bold text-white">
+          R{shown}
           <span className="text-white/60"> / {replay.total}</span>
         </span>
         <span className="text-[11px] font-medium text-ink-soft">再生中</span>
       </div>
-      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-ink/10">
+      <div className="mt-1 h-1 overflow-hidden rounded-full bg-ink/10">
         <div
           key={`${replay.runId}-${replay.round}`}
           className="replay-progress h-full rounded-full bg-accent"
