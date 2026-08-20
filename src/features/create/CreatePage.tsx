@@ -179,6 +179,34 @@ export default function CreatePage() {
     setTimeout(() => setSavedMsg(false), 2500)
   }
 
+  // 作成ボタンが押せない理由の一覧 (ボタン直上に表示し、クリックで該当箇所へ移動)
+  const missing: { key: string; label: string; targetId: string }[] = []
+  if (!name.trim())
+    missing.push({ key: 'name', label: 'あなたの表示名', targetId: 'field-name' })
+  if (!title.trim()) missing.push({ key: 'title', label: 'テーマ名', targetId: 'field-title' })
+  if (boardKind === 'quad' && !quadComplete)
+    missing.push({ key: 'quad', label: '象限の名前 (4つすべて)', targetId: 'field-axis' })
+  if (boardKind !== 'quad' && !axisX.minLabel.trim())
+    missing.push({ key: 'axis', label: '軸の両端ラベル', targetId: 'field-axis' })
+  if (validCards.length < 2)
+    missing.push({
+      key: 'cards',
+      label: `カードを2枚以上 (現在${validCards.length}枚)`,
+      targetId: 'field-cards',
+    })
+
+  const jumpTo = (targetId: string) => {
+    const el = document.getElementById(targetId)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // スクロール後、対象内の最初の「空の」入力欄にフォーカス
+    setTimeout(() => {
+      const inputs = [...el.querySelectorAll<HTMLInputElement>('input:not([type="checkbox"])')]
+      const target = inputs.find((i) => !i.value.trim()) ?? inputs[0]
+      target?.focus({ preventScroll: true })
+    }, 400)
+  }
+
   const submit = async () => {
     if (!canSubmit) return
     setSubmitting(true)
@@ -231,6 +259,7 @@ export default function CreatePage() {
 
       <div className="mt-6 space-y-6">
         <Panel className="space-y-4 p-5" data-tour="create-basic">
+          <div id="field-name">
           <Field
             label="あなたの表示名"
             hint="参加者に表示される名前です"
@@ -248,6 +277,8 @@ export default function CreatePage() {
               maxLength={20}
             />
           </Field>
+          </div>
+          <div id="field-title">
           <Field
             label="テーマ名"
             tip={
@@ -266,9 +297,10 @@ export default function CreatePage() {
               maxLength={60}
             />
           </Field>
+          </div>
         </Panel>
 
-        <Panel className="space-y-4 p-5" data-tour="create-axis">
+        <Panel className="space-y-4 p-5" data-tour="create-axis" id="field-axis">
           <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
             タイプ
             <InfoTip align="left">
@@ -344,7 +376,7 @@ export default function CreatePage() {
           </label>
         </Panel>
 
-        <Panel className="p-5" data-tour="create-cards">
+        <Panel className="p-5" data-tour="create-cards" id="field-cards">
           <div className="mb-3 flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-ink-soft">
               カード ({validCards.length}枚)
@@ -399,6 +431,27 @@ export default function CreatePage() {
         </Panel>
 
         {error && <p className="text-sm font-medium text-accent-deep">{error}</p>}
+
+        {/* 作成に足りない項目のガイド (クリックで該当フィールドへ移動) */}
+        {missing.length > 0 && (
+          <div className="rounded-lg border border-accent/30 bg-accent-soft/40 px-4 py-3">
+            <p className="text-[13px] font-bold text-accent-deep">
+              作成にはあと{missing.length}項目の入力が必要です
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {missing.map((m) => (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => jumpTo(m.targetId)}
+                  className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-white px-3 py-1 text-[13px] font-medium text-accent-deep hover:bg-accent-soft"
+                >
+                  ↑ {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-3">
           <Button
